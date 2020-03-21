@@ -22,3 +22,6 @@ Total 3 (delta 0), reused 0 (delta 0)
 To https://github.com/RochSchanen/rochpygui.git
    8de6179..2567b7e  master -> master
 
+add new files
+$git add base.py gitit.txt myApp.py
+
