@@ -52,8 +52,8 @@ class baseFrm(wx.Frame):
 			pos    = wx.DefaultPosition,
 			size   = wx.DefaultSize,
 			style  = wx.DEFAULT_FRAME_STYLE
-			^ wx.RESIZE_BORDER
-			^ wx.MAXIMIZE_BOX,
+					^ wx.RESIZE_BORDER
+					^ wx.MAXIMIZE_BOX,
 			name   = "")
 
 		# Create panel
@@ -77,15 +77,13 @@ class baseApp(wx.App):
 		# adjust sizes
 		if self.Frame.Panel.BackgroundBitmap:
 			w, h = self.Frame.Panel.BackgroundBitmap.GetSize()
-			self.Frame.SetClientSize(w, h)
+			self.Frame.SetClientSize((w, h))
 
 		# bind key event
 		if ESCAPE: self.Bind(wx.EVT_KEY_DOWN, self._OnKeyDown)
 
 		# show result now
 		self.Frame.Show(True)
-
-		self.Start()
 
 		return True
 
@@ -96,12 +94,6 @@ class baseApp(wx.App):
 		else: event.Skip() # forward event
 		return
 
-	# to be superseeded
+	# Superseed:
 	def Start(self):
 		pass
-
-def startApp(App):
-	App=baseApp()  # Create Application instance
-	App.MainLoop() # Start Application (events)
-	return
-

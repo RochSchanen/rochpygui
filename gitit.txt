@@ -12,7 +12,7 @@ $git commit README.md -m "fist  commit"
 
 first push
 $git push
-Username for 'https://github.com': rochSchanen
+Username for 'https://github.com': RochSchanen
 Password for 'https://rochSchanen@github.com': 
 Counting objects: 3, done.
 Delta compression using up to 8 threads.
