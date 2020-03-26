@@ -133,7 +133,7 @@ class Group:
 				item.SetPosition((self.x+x, self.y+y+b+s))
 				
 				# shift vertical position for next item
-				y += h+t+b
+				y += h+t+b+2*s
 
 			if self.direction == HORIZONTAL:
 
@@ -146,7 +146,7 @@ class Group:
 				item.SetPosition((self.x+x+l+s, self.y+y))
 				
 				# shift horizontal position for next item
-				x += w+l+r 
+				x += w+l+r+2*s
 
 		return
 

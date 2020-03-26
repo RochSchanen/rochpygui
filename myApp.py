@@ -18,11 +18,13 @@ class myApp(baseApp):
 
 		g1 = Group(VERTICAL, 100, 100)
 		g2 = Group(VERTICAL, 100, 100)
-
+		g3 = Group(VERTICAL, 100, 100)
 
 		Content = Group(HORIZONTAL)
 		Content.Place(g1)
 		Content.Place(g2, decoration = "yes")
+		Content.Place(g3, border = (5, 5, 5, 5))
+		# Content.Place(g3)
 
 		Content.DrawAllDecorations(self.Frame.Panel)
 		self.Frame.SetClientSize(Content.GetSize())

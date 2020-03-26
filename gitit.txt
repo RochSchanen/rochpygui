@@ -10,18 +10,18 @@ $git config --global user.email "..."
 commit
 $git commit README.md -m "fist  commit"
 
-first push
+commit all modified;
+$git commit -a
+
 $git push
 Username for 'https://github.com': RochSchanen
-Password for 'https://rochSchanen@github.com': 
-Counting objects: 3, done.
-Delta compression using up to 8 threads.
-Compressing objects: 100% (2/2), done.
-Writing objects: 100% (3/3), 388 bytes | 388.00 KiB/s, done.
-Total 3 (delta 0), reused 0 (delta 0)
-To https://github.com/RochSchanen/rochpygui.git
-   8de6179..2567b7e  master -> master
+Password for 'https://rochSchanen@github.com': ...
 
-add new files
-$git add base.py gitit.txt myApp.py
+add file
+$git add "fileName1" "fileName2" ...
 
+new branch
+$git checkout -b "branchName"
+
+push branch
+$git push origin "branchName"
