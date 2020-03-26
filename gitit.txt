@@ -1,10 +1,10 @@
 gitit.txt
 
-create clone
+create clone in current directory
 $git clone https://github.com/RochSchanen/rochpygui.git
 
 setup identity
-$git config --global user.name "Roch Schanen"
+$git config --global user.name  "..."
 $git config --global user.email "..."
 
 commit

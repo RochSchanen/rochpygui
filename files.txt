@@ -1,0 +1,7 @@
+file.txt
+
+A short description of the project files.
+
+- file.txt: this file.
+- base.py: Simplified App/Frame/Panel.
+- myApp.py: user app template.
