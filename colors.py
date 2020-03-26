@@ -10,25 +10,38 @@ TextColor 		= wx.Colour(255, 255, 255)
 BackgroundColor = wx.Colour( 80,  80,  80)
 
 def dcClear(dc, x, y, w, h):
-	dc.SetPen(wx.TRANSPARENT_PEN)
+
+	dc.SetPen(wx.Pen(
+		wx.Colour(150,0,0), 
+		width = 1,
+		style = wx.PENSTYLE_SOLID))
+
+	# dc.SetPen(wx.TRANSPARENT_PEN)
+
 	dc.SetBrush(wx.Brush(BackgroundColor, wx.SOLID))
 	dc.DrawRectangle(x, y, w, h)
 	return
 
 def dcMark(dc, x, y, w, h):
 	
-	dc.SetPen(wx.Pen(
-		wx.Colour(150,150,150), 
-		width = 1,
-		style = wx.PENSTYLE_SOLID))
-
 	dc.SetBrush(wx.Brush(
 		BackgroundColor, 
 		wx.SOLID))
 	
+	dc.SetPen(wx.Pen(
+		wx.Colour(150, 150, 150), 
+		width = 1,
+		style = wx.PENSTYLE_SOLID))
+
 	dc.DrawRectangle(x, y, w, h)
+
+	dc.SetPen(wx.Pen(
+		wx.Colour(150, 0, 0), 
+		width = 1,
+		style = wx.PENSTYLE_SOLID))
+
 	dc.DrawRectangle(x+5, y+5, w-2*5, h-2*5)
-	
+
 	return
 
 # wx.Pen:

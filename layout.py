@@ -130,7 +130,7 @@ class Group:
 				if alignment == RIGHT:  x = W-w-r-s
 
 				# set position
-				item.SetPosition((self.x+x, self.y+y+b+s))
+				item.SetPosition((self.x+x, self.y+y+t+s))
 				
 				# shift vertical position for next item
 				y += h+t+b+2*s
@@ -214,20 +214,33 @@ class Group:
 
 		if self.items: # check for empty contents
 
-			for item, decoration in zip(self.items, self.decorations):
+			for item, decoration, border in zip(
+				self.items, self.decorations, self.borders):
 		
 				# Get geometry
 				w, h = item.GetSize()
 				x, y = item.GetPosition()
+				l, r, t, b = border
 
 				if decoration:
 					# get decoration geometry
 					# s = Decors.Side(decoration)
 					# dc.DrawBitmap(Decors.Get(decoration, w+2*s, h+2*s), x-s, y-s)
-					dcMark(dc, x-5, y-5, w+2*5, h+2*5)
+					s = 5
+					dcMark(dc, x-r-s, y-t-s, w+l+r+2*s, h+t+b+2*s)
+					dc.SetPen(wx.Pen(
+						wx.Colour(0, 150, 150), 
+						width = 1,
+						style = wx.PENSTYLE_SOLID))
+					dc.DrawRectangle(x, y, w, h)
 
 				else:
-					dcClear(dc, x, y, w, h)
+					dcClear(dc, x-r, y-t, w+l+r, h+t+b)
+					dc.SetPen(wx.Pen(
+						wx.Colour(0, 150, 150), 
+						width = 1,
+						style = wx.PENSTYLE_SOLID))
+					dc.DrawRectangle(x, y, w, h)
 
 				if isinstance(item, Group):
 					# draw children decoration

@@ -9,7 +9,9 @@
 # local imports
 from base   import baseApp
 from colors import BackgroundColor
-from layout import Group, HORIZONTAL, VERTICAL
+from layout import Group
+from layout import HORIZONTAL, VERTICAL
+from layout import LEFT, RIGHT, TOP, BOTTOM
 
 # create app
 class myApp(baseApp):
@@ -19,12 +21,14 @@ class myApp(baseApp):
 		g1 = Group(VERTICAL, 100, 100)
 		g2 = Group(VERTICAL, 100, 100)
 		g3 = Group(VERTICAL, 100, 100)
+		g4 = Group(VERTICAL, 100, 100)
 
-		Content = Group(HORIZONTAL)
+		Content = Group(VERTICAL, w = 500, h = 500)
+
 		Content.Place(g1)
-		Content.Place(g2, decoration = "yes")
-		Content.Place(g3, border = (5, 5, 5, 5))
-		# Content.Place(g3)
+		Content.Place(g3, decoration = "yes")
+		Content.Place(g2, border = (20, 20, 20, 20))
+		Content.Place(g4, border = (20, 20, 20, 20), decoration = "yes")
 
 		Content.DrawAllDecorations(self.Frame.Panel)
 		self.Frame.SetClientSize(Content.GetSize())
