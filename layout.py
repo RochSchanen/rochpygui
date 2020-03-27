@@ -81,6 +81,22 @@ class Group:
 
 		return
 
+	def Expand(self, direction):
+
+		Update = False
+
+		W, H = self.w, self.h
+		w, h = self.GetSize()
+
+		# expand horizontally
+		if direction | HORIZONTAL:
+
+		# expand vertically
+		if direction | VERTICAL:
+
+
+		return
+
 	# finds the top parent and reset positions
 	def _UpdateGeometry(self):
 
@@ -187,7 +203,7 @@ class Group:
 			# 	if W < (2*c+5): W = 2*c+5
 			# 	if H < (2*c+5): H = 2*c+5
 
-		# coerce to the minimum user size
+		# coerce to the minimum set size
 		if W < self.w: W = self.w
 		if H < self.h: H = self.h
 
@@ -223,9 +239,11 @@ class Group:
 				l, r, t, b = border
 
 				if decoration:
+
 					# get decoration geometry
 					# s = Decors.Side(decoration)
 					# dc.DrawBitmap(Decors.Get(decoration, w+2*s, h+2*s), x-s, y-s)
+					
 					s = 5
 					dcMark(dc, x-r-s, y-t-s, w+l+r+2*s, h+t+b+2*s)
 					dc.SetPen(wx.Pen(
@@ -235,6 +253,7 @@ class Group:
 					dc.DrawRectangle(x, y, w, h)
 
 				else:
+
 					dcClear(dc, x-r, y-t, w+l+r, h+t+b)
 					dc.SetPen(wx.Pen(
 						wx.Colour(0, 150, 150), 
