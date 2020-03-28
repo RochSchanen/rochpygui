@@ -1,7 +1,11 @@
-file.txt
+files.txt
 
 A short description of the project files.
 
 - file.txt: this file.
-- base.py: Simplified App/Frame/Panel.
-- myApp.py: user app template.
+- README.md: first file to read.
+- gitit.txt: git commands summary.
+- base.py: Simplified App/Frame/Panel library.
+- myApp.py: user App template.
+- colors.py: color definitions.
+- layout.py: tools to manage the graphics layout.

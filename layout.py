@@ -3,6 +3,11 @@
 # Roch schanen
 # created 2017 sept 23
 
+# TODO: Make a library of tools that select, group and align
+# in a similar way that does: This would allow for a very
+# versatile system and pretty much user friendly: there would
+# be some logic in the process of organising the graphic objects.
+
 # wxpython: https://www.wxpython.org/
 import wx
 
@@ -81,72 +86,108 @@ class Group:
 
 		return
 
-	def Expand(self, direction):
-
-		print("expand")
+	def Expand(self, direction = HORIZONTAL|VERTICAL):
 
 		W, H = self.w, self.h
 		w, h = self._GetMinSize()
 
+		# this group direction is HORIZONTAL
 		if self.direction == HORIZONTAL:
-			
-			print("Group HORIZONTAL")
 
 			# expand horizontally
 			if direction & HORIZONTAL:
-				
-				print("Expand HORIZONTAL")
-				print("W =",W, "w =", w)
-				
-				# add border
 				if W > w:
-
-					print("Width requested W =", W)
-
+					# compute parameters
 					n = len(self.items)
-					print("n =", n)
-					q = (W-w)/(2*n)
-					print("q =", q)
-					p = (W-w)-(2*n)*q
-					print("p =", p)
-
-					print(self.borders)
-
-					for i in range(len(self.borders)):
-						m=0
-						if p>0: m=1; p -= 2
+					q = (W-w)/(2*n)		# ratio
+					p = (W-w)-(2*n)*q	# remainder
+					# modify borders
+					for i in range(n):
+						# get geometry
 						l, r, t, b = self.borders[i]
+						m=0 # distribute the remainder
+						# among the first items: 
+						if p: m=1; p -= 2
+						# set new borders
 						self.borders[i] = l+q+m, r+q+m, t, b
 
-					print(self.borders)
+			# expand vertically
+			if direction & VERTICAL:
+				# compute parameters
+				m = max(H, h)
+				# modify borders
+				for i in range(len(self.items)):
+					# get current geometry
+					iw, ih = self.items[i].GetSize()
+					l, r, t, b = self.borders[i]
+					# compute current height
+					s = ih + t + b
+					if self.decorations[i]:
+						# todo: add decoration
+						s += 2*5
+					# modify accordingly
+					a = self.alignments[i]
+					if a == TOP: 	t, b = t, b+m-s
+					if a == BOTTOM: t, b = t+m-s, b
+					if a == CENTER:
+						# split at the center
+						q = (m-s)/2
+						# correct for the remainder
+						p = (m-s)-2*q
+						# new borders
+						t, b = t+q, b+q+p
+					# set new borders
+					self.borders[i] = l, r, t, b 
+
+		# this group direction is HORIZONTAL
+		if self.direction == VERTICAL:
 
 			# expand horizontally
 			if direction & VERTICAL:
+				if H > h:
+					# compute parameters
+					n = len(self.items)
+					q = (H-h)/(2*n)		# ratio
+					p = (H-h)-(2*n)*q	# remainder
+					# modify borders
+					for i in range(n):
+						# get geometry
+						l, r, t, b = self.borders[i]
+						m=0 # distribute the remainder
+						# among the first items:
+						if p: m=1; p -= 2
+						# set new borders
+						self.borders[i] = l, r, t+q+m, b+q+m
 
-				print("Expand VERTICAL")
-				print("H =",H, "h =", h)
-
-				if H > h: h = H
-				print("Height requested h =", h)
-
-				n = len(self.items)
-				print("n =", n)
-				q = (W-w)/2
-				print("q =", q)
-				p = (W-w)-2*q
-				print("p =", p)
-
-				print(self.borders)
-
-				for i in range(len(self.borders)):
+			# expand vertically
+			if direction & HORIZONTAL:
+				# compute parameters
+				m = max(W, w)
+				# modify borders
+				for i in range(len(self.items)):
+					# get current geometry
+					iw, ih = self.items[i].GetSize()
 					l, r, t, b = self.borders[i]
-					self.borders[i] = l, r, q, q+p
+					# compute current height
+					s = iw + l + r
+					if self.decorations[i]:
+						# todo: add decoration
+						s += 2*5
+					# modify accordingly
+					a = self.alignments[i]
+					if a == LEFT: 	l, r = l, r+m-s
+					if a == RIGHT: 	l, r = l+m-s, r
+					if a == CENTER:
+						# split at the center
+						q = (m-s)/2
+						# correct for the remainder
+						p = (m-s)-2*q
+						# new borders
+						l, r = l+q, r+q+p
+					# set new borders
+					self.borders[i] = l, r, t, b 
 
-				print(self.borders)
-
-		print("Update geometry")
 		self._UpdateGeometry()
-
 		return
 
 	# finds the top parent and reset positions
@@ -255,7 +296,6 @@ class Group:
 			# 	if W < (2*c+5): W = 2*c+5
 			# 	if H < (2*c+5): H = 2*c+5
 
-
 		return (W, H)
 
 	def GetSize(self):
@@ -271,17 +311,23 @@ class Group:
 	# Called once from top group
 	# (no decoration around the top group)
 	def DrawAllDecorations(self, Ctrl):
+
 		# get the group geometry
 		w, h = self.GetSize()
+
 		# create bitmap of the same size
 		Ctrl.BackgroundBitmap = wx.EmptyBitmap(w, h)
+
 		# create device context for drawing
 		dc = wx.MemoryDC()
 		dc.SelectObject(Ctrl.BackgroundBitmap)
+
 		# draw decorations recursively
 		self._DrawDecorations(dc)
+
 		# release device context
 		dc.SelectObject(wx.NullBitmap)
+
 		# done        
 		return
 
@@ -304,7 +350,7 @@ class Group:
 					# dc.DrawBitmap(Decors.Get(decoration, w+2*s, h+2*s), x-s, y-s)
 					
 					s = 5
-					dcMark(dc, x-r-s, y-t-s, w+l+r+2*s, h+t+b+2*s)
+					dcMark(dc, x-l-s, y-t-s, w+l+r+2*s, h+t+b+2*s)
 					dc.SetPen(wx.Pen(
 						wx.Colour(0, 150, 150), 
 						width = 1,
@@ -313,7 +359,7 @@ class Group:
 
 				else:
 
-					dcClear(dc, x-r, y-t, w+l+r, h+t+b)
+					dcClear(dc, x-l, y-t, w+l+r, h+t+b)
 					dc.SetPen(wx.Pen(
 						wx.Colour(0, 150, 150), 
 						width = 1,
@@ -321,7 +367,7 @@ class Group:
 					dc.DrawRectangle(x, y, w, h)
 
 				if isinstance(item, Group):
+
 					# draw children decoration
 					item._DrawDecorations(dc)
-
 		return
