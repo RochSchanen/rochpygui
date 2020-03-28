@@ -83,17 +83,69 @@ class Group:
 
 	def Expand(self, direction):
 
-		Update = False
+		print("expand")
 
 		W, H = self.w, self.h
-		w, h = self.GetSize()
+		w, h = self._GetMinSize()
 
-		# expand horizontally
-		if direction | HORIZONTAL:
+		if self.direction == HORIZONTAL:
+			
+			print("Group HORIZONTAL")
 
-		# expand vertically
-		if direction | VERTICAL:
+			# expand horizontally
+			if direction & HORIZONTAL:
+				
+				print("Expand HORIZONTAL")
+				print("W =",W, "w =", w)
+				
+				# add border
+				if W > w:
 
+					print("Width requested W =", W)
+
+					n = len(self.items)
+					print("n =", n)
+					q = (W-w)/(2*n)
+					print("q =", q)
+					p = (W-w)-(2*n)*q
+					print("p =", p)
+
+					print(self.borders)
+
+					for i in range(len(self.borders)):
+						m=0
+						if p>0: m=1; p -= 2
+						l, r, t, b = self.borders[i]
+						self.borders[i] = l+q+m, r+q+m, t, b
+
+					print(self.borders)
+
+			# expand horizontally
+			if direction & VERTICAL:
+
+				print("Expand VERTICAL")
+				print("H =",H, "h =", h)
+
+				if H > h: h = H
+				print("Height requested h =", h)
+
+				n = len(self.items)
+				print("n =", n)
+				q = (W-w)/2
+				print("q =", q)
+				p = (W-w)-2*q
+				print("p =", p)
+
+				print(self.borders)
+
+				for i in range(len(self.borders)):
+					l, r, t, b = self.borders[i]
+					self.borders[i] = l, r, q, q+p
+
+				print(self.borders)
+
+		print("Update geometry")
+		self._UpdateGeometry()
 
 		return
 
@@ -169,7 +221,7 @@ class Group:
 	def GetPosition(self):
 		return (self.x, self.y)
 
-	def GetSize(self):
+	def _GetMinSize(self):
 
 		W, H = 0, 0
 
@@ -203,7 +255,14 @@ class Group:
 			# 	if W < (2*c+5): W = 2*c+5
 			# 	if H < (2*c+5): H = 2*c+5
 
-		# coerce to the minimum set size
+
+		return (W, H)
+
+	def GetSize(self):
+
+		W, H = self._GetMinSize()
+
+		# coerce to requested size
 		if W < self.w: W = self.w
 		if H < self.h: H = self.h
 
