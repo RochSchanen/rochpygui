@@ -1,18 +1,14 @@
 # 'layout.py'
-# decorations located in ./resources/decorations/
 # Roch schanen
 # created 2017 sept 23
-
-# TODO: Make a library of tools that select, group and align
-# in a similar way that does: This would allow for a very
-# versatile system and pretty much user friendly: there would
-# be some logic in the process of organising the graphic objects.
 
 # wxpython: https://www.wxpython.org/
 import wx
 
-# colors:
-from colors import BackgroundColor, dcClear, dcMark
+from colors import BackgroundColor
+
+# dcgraphics: (this needs some clarification)
+from dcgraphics import dcClear, dcMark
 
 # define options
 opt = 1
@@ -59,8 +55,8 @@ class Group:
 	# - alignment
 	# - decoration
 	# - border
-	# Decorations are found in ".\resources\decorations\"
-	# example: some_group.Place(some_item, CENTER, 'Groove', (10,10,5,5))
+	# Example: some_group.Place(some_item, CENTER, 'Groove', (10,10,5,5))
+	# Decorations such as "groove" are found in ".\resources\decorations\"
 
 	def Place(
 			self,
@@ -99,7 +95,7 @@ class Group:
 				if W > w:
 					# compute parameters
 					n = len(self.items)
-					q = (W-w)/(2*n)		# ratio
+					q = (W-w)/(2*n)		# ratio (integer)
 					p = (W-w)-(2*n)*q	# remainder
 					# modify borders
 					for i in range(n):
@@ -107,7 +103,7 @@ class Group:
 						l, r, t, b = self.borders[i]
 						m=0 # distribute the remainder
 						# among the first items: 
-						if p: m=1; p -= 2
+						if p>1: m=1; p -= 2
 						# set new borders
 						self.borders[i] = l+q+m, r+q+m, t, b
 
@@ -142,12 +138,12 @@ class Group:
 		# this group direction is HORIZONTAL
 		if self.direction == VERTICAL:
 
-			# expand horizontally
+			# expand vertically
 			if direction & VERTICAL:
 				if H > h:
 					# compute parameters
 					n = len(self.items)
-					q = (H-h)/(2*n)		# ratio
+					q = (H-h)/(2*n)		# ratio (integer)
 					p = (H-h)-(2*n)*q	# remainder
 					# modify borders
 					for i in range(n):
@@ -155,11 +151,11 @@ class Group:
 						l, r, t, b = self.borders[i]
 						m=0 # distribute the remainder
 						# among the first items:
-						if p: m=1; p -= 2
+						if p>1: m=1; p -= 2
 						# set new borders
 						self.borders[i] = l, r, t+q+m, b+q+m
 
-			# expand vertically
+			# expand horizontally
 			if direction & HORIZONTAL:
 				# compute parameters
 				m = max(W, w)
@@ -371,3 +367,91 @@ class Group:
 					# draw children decoration
 					item._DrawDecorations(dc)
 		return
+
+class _decorationsLibrary():
+
+	registeredDecorations = {
+		"Groove":  (1, 1, 40, 40, 5, 5, 5, 5),
+		"Ridge" :  (0, 0, 40, 40, 5, 5, 5, 5),
+		"Inset" :  (0, 0, 41, 41, 5, 5, 5, 5),
+		"Outset":  (0, 0, 40, 40, 5, 5, 5, 5)}
+		# todo: use info files to define geometry
+		# elements are x, y, w, h, l, r, t, b
+
+	def __init__(self, Path):
+		self.path = Path
+		self.decorations = {} 
+		# elements are "name":(Sample, l, r, t, b)
+		return
+
+	def GetBitmap(self, name, width, height):
+
+		# check if name is in library
+		if name in self.decorations:
+			Sample, l, r, t, b = self.decorations[name]
+
+		# check if name is in defintions
+		elif name in self.registeredDecorations:
+			x,y,w,h,l,r,t,b = self.registeredDecorations[name]
+			path = self.path + name + ".png"
+			Raw = wx.Bitmap(path, wx.BITMAP_TYPE_PNG)
+			W, H = Raw.GetSize()
+			Clip = wx.Rect(W/2-w/2+x, H/2-h/2+y, w, h)
+			Sample = Raw.GetSubBitmap(Clip)
+			self.decorations[name] = (Sample, r, l, t, b)
+
+		# default
+		else:
+			r, l, t, b = 5, 5, 5, 5
+			Sample = wx.EmptyBitmap(32, 32, wx.BITMAP_SCREEN_DEPTH)
+			# draw default decoration
+			dc = wx.MemoryDC()
+			dc.SelectObject(Sample)
+			dc.SetBrush(wx.Brush(BackgroundColor, wx.BRUSHSTYLE_SOLID))
+			dc.SetPen(wx.TRANSPARENT_PEN)
+			dc.DrawRectangle(0, 0, 32, 32)
+			dc.SetPen(wx.GREY_PEN)
+			dc.DrawRectangle(2, 2, 32-4, 32-4)
+			dc.SelectObject(wx.NullBitmap)
+			# store into library
+			self.decorations[name] = (Sample, r, l, t, b)
+
+		# build Bitmap
+		W, H = Sample.GetSize()
+		w, h = width, height
+		Bitmap = wx.EmptyBitmap(w, h, wx.BITMAP_SCREEN_DEPTH)
+		dc = wx.MemoryDC()
+		dc.SelectObject(Bitmap)
+
+		# Set background
+		dc.SetPen(wx.TRANSPARENT_PEN)
+		dc.SetBrush(wx.Brush(BackgroundColor, wx.BRUSHSTYLE_SOLID))
+		dc.DrawRectangle(0, 0, width, height)
+
+		# Draw corners                            x    y    w    h    x    y
+		dc.DrawBitmap(Sample.GetSubBitmap(wx.Rect(0,   0,   l,   t)), 0,   0)
+		dc.DrawBitmap(Sample.GetSubBitmap(wx.Rect(W-r, 0,   r,   t)), w-r, 0)
+		dc.DrawBitmap(Sample.GetSubBitmap(wx.Rect(W-r, H-b, r,   b)), w-r, h-b)
+		dc.DrawBitmap(Sample.GetSubBitmap(wx.Rect(0,   H-b, l,   b)), 0,   h-b)
+
+		# draw borders
+		B = wx.Brush(wx.BLACK, wx.BRUSHSTYLE_STIPPLE)
+		#                                        x,    y,    w,     h
+		B.SetStipple(Sample.GetSubBitmap(wx.Rect(l,    0,    W-l-r, t)))
+		dc.SetBrush(B);         dc.DrawRectangle(l,    0,    w-l-r, t)
+		B.SetStipple(Sample.GetSubBitmap(wx.Rect(l,    H-b,  W-l-r, b)))
+		dc.SetBrush(B);         dc.DrawRectangle(l,    h-b,  w-l-r, b)
+		B.SetStipple(Sample.GetSubBitmap(wx.Rect(0,    t,    l,     H-t-b)))
+		dc.SetBrush(B);         dc.DrawRectangle(0,    t,    l,     h-t-b)
+		B.SetStipple(Sample.GetSubBitmap(wx.Rect(W-r,  t,    r,     H-t-b)))
+		dc.SetBrush(B);         dc.DrawRectangle(w-r,  t,    r,     h-t-b)
+
+		dc.SelectObject(wx.NullBitmap)
+
+		return Bitmap
+
+	def Side(self, name):
+		b, c, s = self.data[name]
+		return s
+ 
+Decorations = _decorationsLibrary("./resources/decorations/")

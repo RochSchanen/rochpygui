@@ -6,3 +6,5 @@ layout:
 
 - Make a library of tools that select, group and align in a similar way that illustrator does: This would allow for a very versatile system remain pretty much user friendly: There would be some logic in the process of organising the graphics layout.
 
+- Make a library to quickly and simply write and read to/from a configuration file that can be edited or created manually in a text file form.
+

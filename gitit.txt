@@ -25,3 +25,7 @@ $git checkout -b "branchName"
 
 push branch
 $git push origin "branchName"
+
+ignore files
+add patterns to the ".gitignore" file
+
