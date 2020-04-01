@@ -29,3 +29,9 @@ $git push origin "branchName"
 ignore files
 add patterns to the ".gitignore" file
 
+switch back to master
+$git checkout master
+
+merge
+$git merge layout
+
