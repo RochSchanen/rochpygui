@@ -22,43 +22,33 @@ class myApp(baseApp):
 
 	def Start(self):
 
+		# sub groups or graphic objetcs
+		g1 = Group(VERTICAL,  50,  50)
+		g2 = Group(VERTICAL, 100, 100)
+		g3 = Group(VERTICAL, 150, 150)
+		g4 = Group(VERTICAL, 200, 200)
 
+		# Contents layout vertical:
 
-		# # sub groups or graphic objetcs
-		# g1 = Group(VERTICAL,  50,  50)
-		# g2 = Group(VERTICAL, 100, 100)
-		# g3 = Group(VERTICAL, 150, 150)
-		# g4 = Group(VERTICAL, 200, 200)
+		Content = Group(VERTICAL, w = 300, h = 300)
+		Content.Place(g1)
+		Content.Place(g2, LEFT, border = (20, 20, 20, 20), decoration = "Groove")
+		Content.Place(g3, CENTER, border = (20, 20, 20, 20))
+		Content.Place(g4, RIGHT, decoration = "Ridge", border = (20, 0, 0, 0))
+		Content.Expand()
 
-		# # Contents layout
-		# Content = Group(HORIZONTAL, w = 700, h = 300)
+		# Contents layout horizontal:
+
+		# Content = Group(HORIZONTAL, w = 700, h = 700)
 		# Content.Place(g1)
-		# Content.Place(g2, TOP, border = (20, 20, 20, 20), decoration = "yes")
+		# Content.Place(g2, TOP, border = (20, 20, 20, 20), decoration = "Inset")
 		# Content.Place(g3, CENTER, border = (20, 20, 20, 20))
-		# Content.Place(g4, BOTTOM, decoration = "yes", border = (20, 0, 0, 0))
+		# Content.Place(g4, BOTTOM, decoration = "Outset", border = (20, 0, 0, 0))
 		# Content.Expand()
 
-		# # draw once and set size
-		# Content.DrawAllDecorations(self.Frame.Panel)
-		# self.Frame.SetClientSize(Content.GetSize())
-
-		w , h = 200, 200
-		self.Frame.Panel.BackgroundBitmap = wx.EmptyBitmap(w, h)
-		
-		dc = wx.MemoryDC()
-		dc.SelectObject(self.Frame.Panel.BackgroundBitmap)
-
-		# Bitmap = Decorations.GetBitmap('Any', 100, 150)
-		# Bitmap = Decorations.GetBitmap('Ridge', 100, 150)
-		# Bitmap = Decorations.GetBitmap('Groove', 100, 150)
-		# Bitmap = Decorations.GetBitmap('Outset', 100, 150)
-		Bitmap = Decorations.GetBitmap('Inset', 100, 150)
-
-		dc.DrawBitmap(Bitmap, 10, 10)
-
-		dc.SelectObject(wx.NullBitmap)
-
-		self.Frame.SetClientSize((w,h))
+		# draw once and set size
+		Content.DrawAllDecorations(self.Frame.Panel)
+		self.Frame.SetClientSize(Content.GetSize())
 
 		return
 
