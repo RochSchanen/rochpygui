@@ -354,25 +354,11 @@ class Group:
 					# draw decoration
 					dc.DrawBitmap(Bitmap, x-l-L, y-t-T)
 
-					# debug:
-					dc.SetPen(wx.Pen(
-						wx.Colour(150, 100, 100), 
-						width = 1,
-						style = wx.PENSTYLE_SOLID))
-					dc.DrawRectangle(x, y, w, h)
-
 				else:
 					# set background color
 					dc.SetPen(wx.TRANSPARENT_PEN)
 					dc.SetBrush(wx.Brush(BackgroundColor, wx.SOLID))
 					dc.DrawRectangle(x-l, y-t, w+l+r, h+t+b)
-
-					# debug:
-					dc.SetPen(wx.Pen(
-						wx.Colour(150, 100, 100), 
-						width = 1,
-						style = wx.PENSTYLE_SOLID))
-					dc.DrawRectangle(x, y, w, h)
 
 				if isinstance(item, Group):
 					# draw children decoration
