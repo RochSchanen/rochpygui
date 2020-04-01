@@ -7,12 +7,14 @@ import wx
 
 from colors import BackgroundColor
 
-# define options
+# options
 opt = 1
 
+# directions
 HORIZONTAL  = opt; opt<<=1    
 VERTICAL    = opt; opt<<=1   
 
+# alignments
 CENTER      = opt; opt<<=1
 LEFT        = opt; opt<<=1
 RIGHT       = opt; opt<<=1
@@ -23,27 +25,27 @@ BOTTOM      = opt; opt<<=1
 # All graphic objects must have:
 # - A positioning method: SetPostion((x, y))
 # - A size method: GetSize() returning a tuple (w, h)
-
 class Group:
 
 	def __init__(
 			self,
 			direction = HORIZONTAL,   # default orientation of the group
-			w         = 0,            # minimum width of this group
-			h         = 0):           # minimum height of this group
-
+			w         = 10,           # minimum width of this group
+			h         = 10):          # minimum height of this group
+		
 		# This group parameters
 		self.direction = direction
 		self.x, self.y = 0, 0   # this group position
 		self.w, self.h = w, h   # this group minimum width and height
 		self.parent    = None   # this group parent
-
+		
 		# This group contents
 		self.items       = []   # list of items in this group
 		self.alignments  = []   # items' alignment
 		self.decorations = []   # items' decoration
 		self.borders     = []   # items' border
-
+		
+		# done
 		return
 
 	# Add an item to this group
@@ -54,7 +56,6 @@ class Group:
 	# - border
 	# Example: some_group.Place(some_item, CENTER, 'Groove', (10,10,5,5))
 	# Decorations such as "groove" are found in ".\resources\decorations\"
-
 	def Place(
 			self,
 			item,                       # item object
@@ -80,7 +81,7 @@ class Group:
 		return
 
 	def Expand(self, direction = HORIZONTAL|VERTICAL):
-
+		# get geometry
 		W, H = self.w, self.h
 		w, h = self._GetMinSize()
 
@@ -111,22 +112,18 @@ class Group:
 				m = max(H, h)
 				# modify borders
 				for i in range(len(self.items)):
-
 					name = self.decorations[i]
 					align = self.alignments[i]
-
 					# get current geometry
 					iw, ih = self.items[i].GetSize()
 					l, r, t, b = self.borders[i]
 					L, R, T, B = 0, 0, 0, 0
 					if name: L, R, T, B = \
 						Decorations.GetGeometry(name)
-
 					# compute current height
 					s = ih + t+b + T+B
-
 					# modify accordingly
-					if align == TOP: 	t, b = t,     b+m-s
+					if align == TOP: 	t, b = t, b+m-s
 					if align == BOTTOM: t, b = t+m-s, b
 					if align == CENTER:
 						# split at the center
@@ -165,22 +162,18 @@ class Group:
 				m = max(W, w)
 				# modify borders
 				for i in range(len(self.items)):
-
 					name = self.decorations[i]
 					align = self.alignments[i]
-
 					# get current geometry
 					iw, ih = self.items[i].GetSize()
 					l, r, t, b = self.borders[i]
 					L, R, T, B = 0, 0, 0, 0
 					if name: L, R, T, B = \
 						Decorations.GetGeometry(name)
-
 					# compute current width
 					s = iw + l+r + L+R
-
 					# modify accordingly
-					if align == LEFT: 	l, r = l,     r+m-s
+					if align == LEFT: 	l, r = l, r+m-s
 					if align == RIGHT: 	l, r = l+m-s, r
 					if align == CENTER:
 						# split at the center
@@ -197,171 +190,135 @@ class Group:
 
 	# finds the top parent and reset positions
 	def _UpdateGeometry(self):
-
 		# find top parent
 		if self.parent:
 			self.parent._UpdateGeometry()
-		
 		else:
 			# set position of child objects.
 			# top parent has position (0, 0) by default.
 			self.SetPosition((self.x, self.y))
-		
 		return
 
 	def SetPosition(self, position):
-
 		# record the new position
 		self.x, self.y = position
-
 		# get this group size (recursive)
 		W, H = self.GetSize()                   
 
-		# reset children positions
-
+		# reset all children positions
 		x, y = 0, 0
-
 		for item, alignment, decoration, border in zip(
 			self.items, self.alignments, self.decorations, self.borders):
-
 			# get geometry (width, height)
 			w, h = item.GetSize()
-
 			# get border (left, right, top, bottom)
 			l, r, t, b = border 
-
 			# get decors geometry
 			L, R, T, B = 0, 0, 0, 0
 			if decoration: L, R, T, B = \
 				Decorations.GetGeometry(decoration)
 
 			if self.direction == VERTICAL:
-
 				# get horizontal offset
 				if alignment == LEFT:   x = l+L
 				if alignment == CENTER: x = W/2-w/2
 				if alignment == RIGHT:  x = W-w-r-R
-
 				# set position
 				item.SetPosition((self.x + x, self.y + y + t+T))
-				
 				# shift vertical position for next item
 				y += h + t+b + T+B
 
 			if self.direction == HORIZONTAL:
-
 				# get vertical offset
 				if alignment == TOP:    y = t+T
 				if alignment == CENTER: y = H/2-h/2
 				if alignment == BOTTOM: y = H-h-b-B
-				
 				# set position
 				item.SetPosition((self.x + x + l+L, self.y + y))
-				
 				# shift horizontal position for next item
 				x += w + l+r + L+R
-
+		# done
 		return
 
 	def GetPosition(self):
 		return (self.x, self.y)
 
 	def _GetMinSize(self):
-
+		# current position start at 0, 0
 		W, H = 0, 0
-
 		for item, decoration, border in zip(
 			self.items, self.decorations, self.borders):
-
 			# get geometry (width, height)
 			w, h = item.GetSize()
-
 			# get border (left, right, top, bottom)
 			l, r, t, b = border 
-
 			# get decors geometry
 			L, R, T, B = 0, 0, 0, 0
 			if decoration: L, R, T, B = \
 				Decorations.GetGeometry(decoration)
-
+			# build size
 			if self.direction == VERTICAL:
 				W = max(W, w + L+R + l+r)
 				H += h + T+B + t+b
-
 			if self.direction == HORIZONTAL:
 				W += w + L+R + l+r
 				H = max(H, h + T+B + t+b)
-
+			# coerce
 			if decoration:
 				# minimum 10x10 pixels inside a decoration
 				if W < (L+R+10): W = (L+R+10)
 				if H < (T+B+10): H = (T+B+10)
-
+		#done
 		return (W, H)
 
 	def GetSize(self):
-
 		# get geometry
 		W, H = self._GetMinSize()
-
 		# coerce to requested size
 		if W < self.w: W = self.w
 		if H < self.h: H = self.h
-
 		return (W, H)
 
 	# Called once from top group
 	# (no decoration around the top group)
 	def DrawAllDecorations(self, Ctrl):
-
 		# get the group geometry
 		w, h = self.GetSize()
-
 		# create bitmap of the same size
 		Ctrl.BackgroundBitmap = wx.EmptyBitmap(w, h)
-
 		# create device context for drawing
 		dc = wx.MemoryDC()
 		dc.SelectObject(Ctrl.BackgroundBitmap)
-
+		# set background color
+		dc.SetPen(wx.TRANSPARENT_PEN)
+		dc.SetBrush(wx.Brush(BackgroundColor, wx.SOLID))
+		dc.DrawRectangle(0, 0, w, h)
 		# draw decorations recursively
 		self._DrawDecorations(dc)
-
 		# release device context
 		dc.SelectObject(wx.NullBitmap)
-
 		# done        
 		return
 
 	def _DrawDecorations(self, dc):
-
-		if self.items: # check for empty contents
-
+		# check for empty contents
+		if self.items: 
 			for item, name, border in zip(
 				self.items, self.decorations, self.borders):
-		
-				# Get geometry
-				w, h = item.GetSize()
-				x, y = item.GetPosition()
-				l, r, t, b = border
-
+				# check decoration
 				if name:
-					# get geometry
+					# Get geometry
+					w, h = item.GetSize()
+					x, y = item.GetPosition()
+					l, r, t, b = border
 					L, R, T, B = Decorations.GetGeometry(name)
 					# get decoration bitmap
 					Bitmap = Decorations.GetBitmap(
 						name, w+l+r+L+R, h+t+b+T+B)
 					# draw decoration
 					dc.DrawBitmap(Bitmap, x-l-L, y-t-T)
-
-				else:
-					# set background color
-					dc.SetPen(wx.TRANSPARENT_PEN)
-					dc.SetBrush(wx.Brush(BackgroundColor, wx.SOLID))
-					dc.DrawRectangle(x-l, y-t, w+l+r, h+t+b)
-
+				# draw children decoration
 				if isinstance(item, Group):
-					# draw children decoration
 					item._DrawDecorations(dc)
 		return
 
