@@ -35,3 +35,6 @@ $git checkout master
 merge
 $git merge layout
 
+use file for the commit message
+$git commit -aF CommitMessage.txt
+

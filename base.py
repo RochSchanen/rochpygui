@@ -10,7 +10,7 @@ import wx
 # todo: use "BufferedPaintDC" instead of "DCPaint" ?
 
 # modified Panel class
-class basePanel(wx.Panel):
+class _basePanel(wx.Panel):
 
 	# superseed the __init__ method
 	def __init__(self, parent):
@@ -39,7 +39,7 @@ class basePanel(wx.Panel):
 		return
 
 # modified Frame class
-class baseFrm(wx.Frame):
+class _baseFrm(wx.Frame):
 
 	# superseed the __init__ method
 	def __init__(self):
@@ -57,19 +57,23 @@ class baseFrm(wx.Frame):
 			name   = "")
 
 		# Create panel
-		self.Panel = basePanel(self)
+		self.Panel = _basePanel(self)
 		return
 
 # allow ESCAPE sequence when developping projects
 ESCAPE = True
 
 # modified App class
-class baseApp(wx.App):
+class App(wx.App):
 
 	def OnInit(self):
 
+		# Reference to App
+		self.App = self
 		# create and show Frame
-		self.Frame=baseFrm()     
+		self.Frame = _baseFrm()     
+		# reference to Panel
+		self.Panel = self.Frame.Panel
 
 		# user's Start
 		self.Start()

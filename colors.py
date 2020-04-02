@@ -6,5 +6,5 @@
 # wxpython: https://www.wxpython.org/
 import wx
 
-TextColor 		= wx.Colour(255, 255, 255)
-BackgroundColor = wx.Colour( 80,  80,  80)
+TextColor 		 = wx.Colour(255, 255, 255)
+BackgroundColour = wx.Colour( 80,  80,  80)

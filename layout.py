@@ -5,21 +5,21 @@
 # wxpython: https://www.wxpython.org/
 import wx
 
-from colors import BackgroundColor
+from colors import BackgroundColour
 
 # options
-opt = 1
+_opt = 1
 
 # directions
-HORIZONTAL  = opt; opt<<=1    
-VERTICAL    = opt; opt<<=1   
+HORIZONTAL  = _opt; _opt<<=1    
+VERTICAL    = _opt; _opt<<=1   
 
 # alignments
-CENTER      = opt; opt<<=1
-LEFT        = opt; opt<<=1
-RIGHT       = opt; opt<<=1
-TOP         = opt; opt<<=1
-BOTTOM      = opt; opt<<=1
+CENTER      = _opt; _opt<<=1
+LEFT        = _opt; _opt<<=1
+RIGHT       = _opt; _opt<<=1
+TOP         = _opt; _opt<<=1
+BOTTOM      = _opt; _opt<<=1
 
 # The group class allows to group and align graphic objects.
 # All graphic objects must have:
@@ -291,7 +291,7 @@ class Group:
 		dc.SelectObject(Ctrl.BackgroundBitmap)
 		# set background color
 		dc.SetPen(wx.TRANSPARENT_PEN)
-		dc.SetBrush(wx.Brush(BackgroundColor, wx.SOLID))
+		dc.SetBrush(wx.Brush(BackgroundColour, wx.SOLID))
 		dc.DrawRectangle(0, 0, w, h)
 		# draw decorations recursively
 		self._DrawDecorations(dc)
@@ -370,7 +370,7 @@ class _decorationsLibrary():
 			dc = wx.MemoryDC()
 			dc.SelectObject(Sample)
 			# set background color
-			dc.SetBrush(wx.Brush(BackgroundColor, wx.BRUSHSTYLE_SOLID))
+			dc.SetBrush(wx.Brush(BackgroundColour, wx.BRUSHSTYLE_SOLID))
 			dc.SetPen(wx.TRANSPARENT_PEN)
 			dc.DrawRectangle(0, 0, 32, 32)
 			# draw decoration (grey line countour)
@@ -396,7 +396,7 @@ class _decorationsLibrary():
 		dc.SelectObject(Bitmap)
 		# set background color
 		dc.SetPen(wx.TRANSPARENT_PEN)
-		dc.SetBrush(wx.Brush(BackgroundColor, wx.BRUSHSTYLE_SOLID))
+		dc.SetBrush(wx.Brush(BackgroundColour, wx.BRUSHSTYLE_SOLID))
 		dc.DrawRectangle(0, 0, width, height)
 		# top
 		tile = Sample.GetSubBitmap(wx.Rect(l, 0, W-l-r, t))
