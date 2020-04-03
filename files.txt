@@ -11,3 +11,4 @@ A short description of the project files.
 - layout.py: tools to manage the graphics layout.
 - display.py: tool for collecting small images into a library and displaying them
 - buttons.py: A collection of simple buttons: push, switch, radio.
+- controls.py: A root class for simple control objects.

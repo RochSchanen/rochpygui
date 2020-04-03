@@ -1,6 +1,8 @@
 # 'display.py'
-# Roch schanen
-# created; 2020 Jan 30
+# content; Simple display classes.
+# author; Roch schanen
+# created; 2020 April 02
+# repository; https://github.com/RochSchanen/rochpygui
 
 # wxpython: https://www.wxpython.org/
 import wx

@@ -1,7 +1,8 @@
 # 'colors.py'
-# color definitions
-# Roch schanen
-# created 2017 sept 22
+# content; Basic colour definitions.
+# author; Roch schanen
+# created; 2020 Mars 26
+# repository; https://github.com/RochSchanen/rochpygui
 
 # wxpython: https://www.wxpython.org/
 import wx

@@ -1,8 +1,8 @@
 # 'base.py'
-# The basic App/Frame/Panel
-# Roch schanen
-# created; 2017 sept 22
-# https://github.com/RochSchanen/rochpygui
+# content; The App/Frame/Panel classes.
+# author; Roch schanen
+# created; 2020 Mars 21
+# repository; https://github.com/RochSchanen/rochpygui
 
 # wxpython: https://www.wxpython.org/
 import wx

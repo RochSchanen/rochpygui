@@ -1,6 +1,8 @@
 # 'buttons.py'
-# Roch schanen
-# created; 2020 Feb 7
+# content; Simple button classes.
+# author; Roch schanen
+# created; 2020 April 03
+# repository; https://github.com/RochSchanen/rochpygui
 
 # wxpython: https://www.wxpython.org/
 import wx
