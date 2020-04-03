@@ -9,3 +9,5 @@ A short description of the project files.
 - myApp.py: user App template.
 - colors.py: color definitions.
 - layout.py: tools to manage the graphics layout.
+- display.py: tool for collecting small images into a library and displaying them
+- buttons.py: A collection of simple buttons: push, switch, radio.

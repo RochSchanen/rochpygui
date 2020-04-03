@@ -49,7 +49,7 @@ class PNGlib():
 		W, H = self.Sample.GetSize()
 		P, Q = W/p, H/q
 		w, h = (P, Q) if self.Size == None else self.Size
-		x, y = (m-1)*P + (P-w)/2, (n-1)*Q + (Q-h)/2
+		x, y = (m-1)*P + (P-w)/2 + X , (n-1)*Q + (Q-h)/2 + Y
 		Clip = wx.Rect(x, y, w, h)
 		self.pngs[name] = self.Sample.GetSubBitmap(Clip)
 		return
