@@ -8,7 +8,7 @@
 import wx
 
 # local modules:
-from colors import BackgroundColour
+from colours import BackgroundColour
 
 # Extract and store bitmaps from png files
 class PNGlib():

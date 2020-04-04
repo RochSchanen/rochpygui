@@ -115,11 +115,14 @@ class Switch(_btn):
 		self.lock = True
 		if self.radio:
 			self.radio.Select(self)
+		self.status |= 2
+		self.Refresh()
 		return
 
 	def _onMouseUp(self, event):
 		if self.lock:
 			self.lock = False
+			self.status &= 1
 			self.status ^= 1
 			self.Refresh()
 			self.SendEvent()
@@ -128,6 +131,8 @@ class Switch(_btn):
 	def _onMouseLeave(self, event):
 		if self.lock:
 			self.lock = False
+			self.status &= 1
+			self.Refresh()
 		return
 
 	# called by radio group

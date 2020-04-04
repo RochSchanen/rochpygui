@@ -4,6 +4,11 @@
 # created; 2020 April 03
 # repository; https://github.com/RochSchanen/rochpygui
 
+# wxpython: https://www.wxpython.org/
+import wx
+
+from colours import BackgroundColour
+
 class Control(wx.Control):
 
 	def __init__(
@@ -35,7 +40,13 @@ class Control(wx.Control):
 		self.Bind(wx.EVT_ERASE_BACKGROUND,self._onEraseBackground)
 		self.Bind(wx.EVT_PAINT,self._onPaint)
 
+		# user constructor
+		self.Start()
+
 		return
+
+	def Start(self):
+		return None
 
 	def _onEraseBackground(self, event):
 		# no operation (reduced flicker)

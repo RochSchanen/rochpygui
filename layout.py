@@ -7,7 +7,7 @@
 # wxpython: https://www.wxpython.org/
 import wx
 
-from colors import BackgroundColour
+from colours import BackgroundColour
 
 # options
 _opt = 1
