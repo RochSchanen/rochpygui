@@ -7,7 +7,7 @@
 # wxpython: https://www.wxpython.org/
 import wx
 
-from colours import BackgroundColour
+from theme import BackgroundColour
 
 class Control(wx.Control):
 

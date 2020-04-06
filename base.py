@@ -84,20 +84,21 @@ class App(wx.App):
 			self.Frame.SetClientSize((w, h))
 
 		# bind key event
-		if ESCAPE: self.Bind(wx.EVT_KEY_DOWN, self._OnKeyDown)
+		self.Bind(wx.EVT_KEY_DOWN, self._OnKeyDown)
 
 		# show result now
 		self.Frame.Show(True)
 
 		return True
 
+	# to be Superseeded by user's code:
+	def Start(self):
+		pass
+
 	# Exit on Esc: Debugging/Development stage
 	def _OnKeyDown(self, event):
 		key = event.GetKeyCode()
-		if key == wx.WXK_ESCAPE: wx.Exit()
+		if ESCAPE:
+			if key == wx.WXK_ESCAPE: wx.Exit()
 		else: event.Skip() # forward event
 		return
-
-	# Superseed:
-	def Start(self):
-		pass

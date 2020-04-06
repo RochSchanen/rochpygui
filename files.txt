@@ -2,13 +2,14 @@ files.txt
 
 A short description of the project files.
 
-- file.txt: this file.
-- README.md: first file to read.
+- files.txt: this file.
+- README.md: read it.
 - gitit.txt: git commands summary.
 - base.py: Simplified App/Frame/Panel library.
-- myApp.py: user App template.
-- colors.py: color definitions.
+- theme.py: theme resources (colors and image libraries).
 - layout.py: tools to manage the graphics layout.
-- display.py: tool for collecting small images into a library and displaying them
+- display.py: tool for collecting images to display.
 - buttons.py: A collection of simple buttons: push, switch, radio.
-- controls.py: A root class for simple control objects.
+- controls.py: A root class for creating control objects.
+- myApp.py: user App template.
+- testAppXXX.py: demo Apps.

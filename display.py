@@ -7,66 +7,7 @@
 # wxpython: https://www.wxpython.org/
 import wx
 
-# local modules:
-from colours import BackgroundColour
-
-# Extract and store bitmaps from png files
-class PNGlib():
-
-	def __init__(self, path = "./resources/pngs/"):
-		self.path   = path
-		self.pngs   = {}
-		self.Grid   = 1, 1
-		self.Size   = None
-		self.Offset = 0, 0
-		return
-
-	def load(self, name):
-		path = self.path + name + ".png"
-		self.Sample = wx.Bitmap(path, wx.BITMAP_TYPE_PNG)
-		return
-
-	# p is the number of columns
-	# q is the number of lines
-	def SetGrid(self, p, q):
-		self.Grid = p, q
-		return
-
-	# default None ()
-	def SetSize(self, Size):
-		self.Size = Size
-		return
-
-	# default is None
-	def SetOffset(self, X, Y):
-		self.Offset = X, Y
-		return
-
-	# add bitmap to the dictionary
-	# from the grid index
-	def Add(self, name, m, n):
-		# get geometry
-		X, Y = self.Offset
-		p, q = self.Grid
-		W, H = self.Sample.GetSize()
-		P, Q = W/p, H/q
-		w, h = (P, Q) if self.Size == None else self.Size
-		x, y = (m-1)*P + (P-w)/2 + X , (n-1)*Q + (Q-h)/2 + Y
-		Clip = wx.Rect(x, y, w, h)
-		self.pngs[name] = self.Sample.GetSubBitmap(Clip)
-		return
-
-	#  get bitmap(s) from the dictionary by name(s)
-	def Get(self, names):
-		# return single image
-		if not isinstance(names, list):
-			return self.pngs[names]
-		# return list of images
-		pngs = []
-		for name in names:
-			pngs.append(self.pngs[name])
-		# done
-		return pngs
+from theme import *
 
 class Display(wx.Control):
 
@@ -130,3 +71,20 @@ class Display(wx.Control):
 	def GetValue(self):
 		return self.status
 
+class Text(wx.StaticText):
+
+	def __init__(self, parent, text):
+
+		wx.StaticText.__init__(self,
+			parent = parent,
+			label  = text,
+			id     = wx.ID_ANY,
+			pos    = wx.DefaultPosition,
+			size   = wx.DefaultSize,
+			style  = wx.NO_BORDER,
+			name   = wx.TextCtrlNameStr)
+
+		self.SetForegroundColour(TextColour)
+		self.SetBackgroundColour(BackgroundColour)
+
+		return

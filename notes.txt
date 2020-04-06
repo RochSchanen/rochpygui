@@ -2,9 +2,41 @@ notes.txt
 
 list of thoughts as they come...
 
+base:
+
+- add features to setup title, the startup position, etc...
+
+Themes:
+
+- Create a theme system: theme images and backgrounds that can be easely updated/modified. 06 April 2020, partially done. How ot switch between themes?
+- try to use the benefit of png transparency.
+- try to make use of the SVG language for the graphics ?
+
 layout:
 
-- Make a library of tools that select, group and align in a similar way that illustrator does: This would allow for a very versatile system remain pretty much user friendly: There would be some logic in the process of organising the graphics layout.
+- Make a library of tools that select, group and align in a similar way that illustrator does. This would allow for a very versatile system while remaining pretty much user friendly. There would be some logic in the process of organising the graphics layout.
+
+display:
+
+- ...
+
+buttons:
+
+- ....
+
+controls:
+
+- ...
+
+Config:
 
 - Make a library to quickly and simply write and read to/from a configuration file that can be edited or created manually in a text file form.
+
+Log/Data base:
+
+- Make a log system. Accessible as a database.
+
+Pdf:
+
+ - Export graphs as pdf for sharing and printing
 
