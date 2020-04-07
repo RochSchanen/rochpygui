@@ -46,7 +46,7 @@ class Control(wx.Control):
 		return
 
 	def Start(self):
-		return None
+		return
 
 	def _onEraseBackground(self, event):
 		# no operation (reduced flicker)

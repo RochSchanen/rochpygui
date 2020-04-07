@@ -327,8 +327,7 @@ class Group:
 class _decorationsLibrary():
 
 	# decorations elements are "name":(Sample, l, r, t, b)
-	def __init__(self, Path):
-		self.path = Path
+	def __init__(self):
 		self.decorations = {} 
 		return
 
@@ -445,4 +444,4 @@ class _decorationsLibrary():
 
 # create empty library
 # (The library fills up as decorations get requested)
-Decorations = _decorationsLibrary("./resources/themes/dark/")
+Decorations = _decorationsLibrary()

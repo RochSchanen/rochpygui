@@ -11,5 +11,6 @@ A short description of the project files.
 - display.py: tool for collecting images to display.
 - buttons.py: A collection of simple buttons: push, switch, radio.
 - controls.py: A root class for creating control objects.
-- myApp.py: user App template.
-- testAppXXX.py: demo Apps.
+- plot.py: A module for ploting graph and others.
+- myApp.py: user App minimum code.
+- testApp.py: demo App.
