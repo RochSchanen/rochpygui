@@ -7,7 +7,7 @@
 # wxpython: https://www.wxpython.org/
 import wx
 
-from theme import BackgroundColour
+from theme import *
 
 # options
 _opt = 1
@@ -326,14 +326,6 @@ class Group:
 
 class _decorationsLibrary():
 
-	registeredDecorations = {
-		"Groove":  (4, 3, 4, 3, 3, 3, 3, 3),
-		"Ridge" :  (3, 4, 3, 4, 3, 3, 3, 3),
-		"Inset" :  (4, 4, 4, 4, 3, 3, 3, 3),
-		"Outset":  (4, 4, 4, 4, 3, 3, 3, 3)}
-		# todo: use info files to define geometry
-		# elements are L, R, T, B, l, r, t, b
-
 	# decorations elements are "name":(Sample, l, r, t, b)
 	def __init__(self, Path):
 		self.path = Path
@@ -347,41 +339,37 @@ class _decorationsLibrary():
 			# get geometry and sample from library
 			Sample, l, r, t, b = self.decorations[Name]
 
-		# check if name is in defintions
-		elif Name in self.registeredDecorations:
-			# get geometry
-			L,R,T,B,l,r,t,b = self.registeredDecorations[Name]
-			# get path to decoration file
-			path = self.path + Name + ".png"
-			# load raw bitmap
-			Raw = wx.Bitmap(path, wx.BITMAP_TYPE_PNG)
-			# clip edges to make decoration sample
-			W, H = Raw.GetSize()
-			Clip = wx.Rect(L, T, W-L-R, H-T-B)
-			Sample = Raw.GetSubBitmap(Clip)
-			# store into library
-			self.decorations[Name] = (Sample, l, r, t, b)
-
-		# default (name was not found anywhere)
 		else:
-			# get geometry
-			r, l, t, b = 3, 3, 3, 3
-			# create sample bitmap
-			Sample = wx.EmptyBitmap(32, 32, wx.BITMAP_SCREEN_DEPTH)
-			# create dc
-			dc = wx.MemoryDC()
-			dc.SelectObject(Sample)
-			# set background color
-			dc.SetBrush(wx.Brush(BackgroundColour, wx.BRUSHSTYLE_SOLID))
-			dc.SetPen(wx.TRANSPARENT_PEN)
-			dc.DrawRectangle(0, 0, 32, 32)
-			# draw decoration (grey line countour)
-			dc.SetPen(wx.GREY_PEN)
-			dc.DrawRectangle(1, 1, 32-2*1, 32-2*1)
-			# release dc
-			dc.SelectObject(wx.NullBitmap)
-			# store into library
-			self.decorations[Name] = (Sample, l, r, t, b)
+			# get image
+			lib, names = Theme.GetImages("Decoration", Name)
+			if lib and names:
+				# get sample
+				Sample = lib.Get(Name+"_0")
+				# get geometry
+				l,r,t,b = Theme.GetValue("Decoration", "Border")
+				# store results
+				self.decorations[Name] = (Sample, l, r, t, b)
+
+			# use default (lib or image not found)
+			else:
+				# get geometry
+				r, l, t, b = 3, 3, 3, 3
+				# create sample bitmap
+				Sample = wx.EmptyBitmap(32, 32, wx.BITMAP_SCREEN_DEPTH)
+				# create dc
+				dc = wx.MemoryDC()
+				dc.SelectObject(Sample)
+				# set background color
+				dc.SetBrush(wx.Brush(BackgroundColour, wx.BRUSHSTYLE_SOLID))
+				dc.SetPen(wx.TRANSPARENT_PEN)
+				dc.DrawRectangle(0, 0, 32, 32)
+				# draw decoration (grey line countour)
+				dc.SetPen(wx.GREY_PEN)
+				dc.DrawRectangle(1, 1, 32-2*1, 32-2*1)
+				# release dc
+				dc.SelectObject(wx.NullBitmap)
+				# store into library
+				self.decorations[Name] = (Sample, l, r, t, b)
 
 		return Sample, l, r, t, b
 
@@ -457,4 +445,4 @@ class _decorationsLibrary():
 
 # create empty library
 # (The library fills up as decorations get requested)
-Decorations = _decorationsLibrary("./resources/decorations/")
+Decorations = _decorationsLibrary("./resources/themes/dark/")

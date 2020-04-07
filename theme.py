@@ -62,6 +62,19 @@ _ImageLibraries = {
 		"Green"		: [(5, 2), (8, 2)],
 		"White"		: [(1, 3), (4, 3)],
 		"Yellow"	: [(5, 3), (8, 3)]
+		},
+
+	"Decoration":{
+		"path"		:"606060_DECOR.png",
+		"Grid"		: (2, 2),
+		"Size"		: (64, 64),
+		"Offset"	: (0, 0),
+		"Border"	: (8, 8, 8, 8),
+		# sets:
+		"Groove"	: [(1, 2)],
+		"Ridge"		: [(1, 1)],
+		"Inset"		: [(2, 2)],
+		"Outset"	: [(2, 1)],
 		}
 
 	}
@@ -135,7 +148,25 @@ class _Theme():
 		self.libs 	= {}
 		return
 
-	def Get(self, libName, setName):
+	def GetValue(self, libName, valName):
+		# check libName exists
+		if libName in _ImageLibraries.keys():
+			ref = _ImageLibraries[libName]
+			# check setName exists in libName
+			if valName in ref.keys():
+				value = ref[valName]
+			else:
+				print("in 'theme.py',")
+				print("in libName '%s'," % libName)
+				print("Undefined valName '%s'." % valName)
+				value = None
+		else:
+			print("in 'theme.py',")
+			print("undefined libName '%s'." % libName)
+			value =  None
+		return value
+
+	def GetImages(self, libName, setName):
 		# check libName exists
 		if libName in _ImageLibraries.keys():
 			ref = _ImageLibraries[libName]
