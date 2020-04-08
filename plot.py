@@ -37,9 +37,10 @@ class _ClipScreen(wx.Control):
 		self.H 		= Height
 
 		# LOCAL
-		self.buffer   = None
-		self.position = 0, 0
-		self.clipArea = 0, 0, 0, 0
+		self.buffer 	= None
+		self.position 	= 0, 0
+		self.clipArea 	= 0, 0, 0, 0
+		self.tool 		= None
 
 		# Set Screen Size
 		self.SetSize((self.W, self.H))
@@ -72,6 +73,8 @@ class _ClipScreen(wx.Control):
 
 		dc.SetBackground(wx.Brush(BackgroundColour))
 		dc.Clear() # clear everything for the moment
+		# todo: might want to clear selectively. maybe.
+
 		# draw
 		if self.buffer:
 			# get clip geometry
@@ -79,24 +82,46 @@ class _ClipScreen(wx.Control):
 			w, h = self.W, self.H
 			l, r, t, b = self.clipArea
 			# get clip image
+			# todo: add case when negative values
+			# todo: add case when too large values
+			# at the moment: coertion is used in the drag tool
 			r = wx.Rect(x+l, y+t, w-l-r, h-t-b)
 			clip = self.buffer.GetSubBitmap(r)
 			# draw clipped area
 			dc.DrawBitmap(clip, l, t)
+
+		# more drawing from user
+		# add user onPaint() here ...
+
+		# more drawing from selected tool
+		if self.tool:
+			self.tool.onPaint(dc)
+
 		# done: It is not required to deselect
 		# the DC object when using BufferedPaintDC()
 		# in the onPaint() context [ref].
 		return
 
-# tool used to drag the buffer under the clipScreen
-class _dragClipScreenBuffer():
+	def ToolSelect(self, tool):
+		if self.tool: self.tool.Deselect()
+		self.tool = tool
+		tool.Select()
+		self.Refresh()
+		return
+
+# generic class for creating tools
+class _ClipScreenTool():
 
 	def __init__(self, ClipScreen):
 		self.scr = ClipScreen
-		self.lock = False
+		self.Start()
 		return
 
-	# additional painting
+	# user constructor
+	def Start(self):
+		pass
+
+	# more drawing from selected tool
 	def onPaint(self, dc):
 		pass
 
@@ -106,8 +131,7 @@ class _dragClipScreenBuffer():
 		self.scr.Bind(wx.EVT_LEFT_DOWN, 	self._LeftDown)
 		self.scr.Bind(wx.EVT_MOTION, 		self._Motion)
 		self.scr.Bind(wx.EVT_LEFT_UP, 		self._LeftUp)
-		# Leaving window is considered as a mouse up event
-		self.scr.Bind(wx.EVT_LEAVE_WINDOW,  self._LeftUp)
+		self.scr.Bind(wx.EVT_LEAVE_WINDOW,  self._LeaveWindow)
 		return
 
 	# self deselect method
@@ -119,11 +143,34 @@ class _dragClipScreenBuffer():
 		self.scr.Unbind(wx.EVT_LEAVE_WINDOW)
 		return
 
+	def _LeaveWindow(self, event):
+		pass
+
+# tool used to drag the buffer under the clipScreen
+class _ClipScreenDragBuffer(_ClipScreenTool):
+
+	def Start(self):
+		self.lock = False
+
+		self.position = None # ...
+
+		return
+
+	def onPaint(self, dc):
+		if self.position:
+			x, y = self.position
+			dc.SetPen(wx.Pen(
+				wx.Colour(220,100,100), 1.0))
+			dc.DrawLine(x-15, y, x+15, y)
+			dc.DrawLine(x, y-15, x, y+15)
+		return
+
 	# todo: no drag from the border
 	def _LeftDown(self, event):
 		self.lock = True        
 		self.MouseStart  = event.GetPosition()
-		self.scrStart = self.scr.position 
+		self.scrStart = self.scr.position
+		self.position = self.MouseStart # ...
 		return
 
 	# todo: no drag further than the border
@@ -142,6 +189,9 @@ class _dragClipScreenBuffer():
 			P, Q = max(P, 0), max(Q, 0)
 			P, Q = min(P, w-W), min(Q, h-H)
 			self.scr.position = P, Q
+
+			self.position = x, y # ...
+
 			# refresh() invoques the _onPaint method
 			self.scr.Refresh()
 		return
@@ -150,4 +200,12 @@ class _dragClipScreenBuffer():
 		if self.lock:
 			# here: call to a user refresh of the buffer
 			self.lock = False
+
+			self.position = None # ...
+			self.scr.Refresh()
+
+		return
+
+	def _LeaveWindow(self, event):
+		self._LeftUp(event)
 		return
