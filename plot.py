@@ -13,6 +13,10 @@ import numpy as np
 # LOCAL
 from theme import *
 
+###############################################################################
+############################### CLIP SCREEN ###################################
+###############################################################################
+
 class _ClipScreen(wx.Control):
 
 	def __init__(
@@ -109,6 +113,10 @@ class _ClipScreen(wx.Control):
 		self.Refresh()
 		return
 
+###############################################################################
+############################## CLIP SCREEN TOOL ###############################
+###############################################################################
+
 # generic class for creating tools
 class _ClipScreenTool():
 
@@ -146,23 +154,15 @@ class _ClipScreenTool():
 	def _LeaveWindow(self, event):
 		pass
 
+###############################################################################
+############################## CLIP SCREEN DRAG BUFFER ########################
+###############################################################################
+
 # tool used to drag the buffer under the clipScreen
 class _ClipScreenDragBuffer(_ClipScreenTool):
 
 	def Start(self):
 		self.lock = False
-
-		self.position = None # ...
-
-		return
-
-	def onPaint(self, dc):
-		if self.position:
-			x, y = self.position
-			dc.SetPen(wx.Pen(
-				wx.Colour(220,100,100), 1.0))
-			dc.DrawLine(x-15, y, x+15, y)
-			dc.DrawLine(x, y-15, x, y+15)
 		return
 
 	# todo: no drag from the border
@@ -170,7 +170,6 @@ class _ClipScreenDragBuffer(_ClipScreenTool):
 		self.lock = True        
 		self.MouseStart  = event.GetPosition()
 		self.scrStart = self.scr.position
-		self.position = self.MouseStart # ...
 		return
 
 	# todo: no drag further than the border
@@ -189,10 +188,7 @@ class _ClipScreenDragBuffer(_ClipScreenTool):
 			P, Q = max(P, 0), max(Q, 0)
 			P, Q = min(P, w-W), min(Q, h-H)
 			self.scr.position = P, Q
-
-			self.position = x, y # ...
-
-			# refresh() invoques the _onPaint method
+			# invoque the _onPaint method
 			self.scr.Refresh()
 		return
 
@@ -200,12 +196,238 @@ class _ClipScreenDragBuffer(_ClipScreenTool):
 		if self.lock:
 			# here: call to a user refresh of the buffer
 			self.lock = False
-
-			self.position = None # ...
-			self.scr.Refresh()
-
 		return
 
+	# Make Leave event the same as Left event
 	def _LeaveWindow(self, event):
 		self._LeftUp(event)
 		return
+
+###############################################################################
+################################# GRAPH #######################################
+###############################################################################
+
+# options
+_opt = 1
+
+# drawing location
+LEFT			= _opt; _opt<<=1
+RIGHT			= _opt; _opt<<=1
+TOP				= _opt; _opt<<=1
+BOTTOM			= _opt; _opt<<=1
+
+# drawing options
+DRAW_BOX		= _opt; _opt<<=1
+DRAW_LABELS		= _opt; _opt<<=1
+DRAW_GRID		= _opt; _opt<<=1
+DRAW_AXIS		= _opt; _opt<<=1
+DRAW_PLOTS		= _opt; _opt<<=1
+
+SKIP_BORDERS 	= _opt; _opt<<=1
+
+class _Graph():
+
+	def __init__(self, Width, Height):
+
+		# PARAMETERS
+		self.size = Width, Height
+		
+		# LOCAL
+		self.bitmap = wx.EmptyBitmap(Width, Height, wx.BITMAP_SCREEN_DEPTH)
+		self.limit  = -1.0, 1.0, -1.0, 1.0 # default to avoid division by zero
+		self.border = 0, 0, 0, 0
+		self.scale  = None
+		self.style  = DRAW_BOX | DRAW_AXIS | DRAW_GRID
+
+		# here the buffer is only cleared
+		self._resetScale()
+		self._refreshBuffer()
+
+		# done
+		return
+
+	# prepare to refresh the buffer:
+	# create device context and clear
+	def _refreshBuffer(self):
+		# Create Device Context
+		dc = wx.MemoryDC()
+		# Select DisplayBitmap
+		dc.SelectObject(self.bitmap)
+		# set background
+		dc.SetBackground(wx.Brush(wx.Colour(0,0,0)))
+		# clear everything
+		dc.Clear()
+		# user drawings
+		self.RefreshBuffer(dc)        
+		# Release bitmap from the device context
+		dc.SelectObject(wx.NullBitmap)
+		return
+
+	def ResetBorder(self, l, r, t, b):
+		self.border = l, r, t, b
+		self._resetScale()
+		self._refreshBuffer()
+		return
+
+	def ResetLimit(self, xs, xe, ys, ye):
+		self.limit = float(xs), float(xe), float(ys), float(ye)
+		self._resetScale()
+		self._refreshBuffer()
+		return
+
+	# Compute scale such that:
+
+	# xs -> l
+	# xe -> W-r-1
+	# ys -> H-b-1 
+	# ye -> t
+
+	def _resetScale(self):
+		# get geometry
+		W, H = self.size
+		l, r, t, b = self.border
+		xs, xe, ys, ye = self.limit
+		# make computation explicit
+		Xs, Xe, Ys, Ye = l, W-r-1, H-b-1, t
+		# compute scale
+		ax = (Xe-Xs)/float(xe-xs)
+		ay = (Ye-Ys)/float(ye-ys)
+		bx, by = Xs-ax*xs, Ys-ay*ys
+		# record result
+		self.scale = ax, bx, ay, by
+		return
+
+	# get pixels from coordinates
+	# (x and y can be arrays of the same size)
+	def GetPixels(self, x, y):
+		ax, bx, ay, by = self.scale
+		X, Y = ax*x+bx, ay*y+by
+		return X, Y
+
+	# get coordinates from pixels
+	# (X and Y can be arrays of the same size)
+	def GetCoords(self, X, Y):
+		ax, bx, ay, by = self.scale
+		# compute coordinates
+		x, y = (X-bx)/ax, (Y-by)/ay
+		return x, y
+
+	# the drawings happen here
+	def RefreshBuffer(self, dc):
+		if self.style & DRAW_GRID: 	self._drawGrid(dc)
+		if self.style & DRAW_AXIS: 	self._drawAxis(dc)
+		if self.style & DRAW_BOX: 	self._drawBox(dc)
+		return
+
+	def _drawBox(self, dc):
+		# get geometry
+		W, H = self.size
+		l, r, t, b = self.border
+		# setup style
+		dc.SetBrush(wx.TRANSPARENT_BRUSH)
+		dc.SetPen(wx.Pen(wx.Colour(200,200,100), 1.0))
+		# draw box
+		dc.DrawRectangle(l, t, W-l-r, H-t-b)
+		# done
+		return
+
+	def _drawAxis(self, dc):
+		# get geometry
+		W, H = self.size
+		X, Y = self.GetPixels(0.0, 0.0)
+		l, r, t, b = self.border
+		if self.style & SKIP_BORDERS:
+			l, r, t, b = (0, 0, 0, 0)
+		# setup style
+		dc.SetBrush(wx.TRANSPARENT_BRUSH)
+		dc.SetPen(wx.Pen(wx.Colour(220,100,100), 1.0))
+		# draw Axis
+		dc.DrawLine(X, t, X, H-b-1)
+		dc.DrawLine(l, Y, W-r-1, Y)
+		# done
+		return
+
+	def _drawGrid(self, dc):
+		# get geometry
+		W, H = self.size
+		X, Y = self.GetPixels(0.0, 0.0)
+		l, r, t, b = self.border
+		xs, xe, ys, ye = self.limit
+		# get ticks intervals
+		mix, six = self._GetTKI(xs, xe, 7)
+		miy, siy = self._GetTKI(ys, ye, 7)
+		# find edge coordinates
+		if self.style & SKIP_BORDERS: l, r, t, b = 0, 0, 0, 0
+		xs, ys = self.GetCoords(l, H-b-1)
+		xe, ye = self.GetCoords(W-r-1, t)
+		# get buffer ticks positions (coordinates)
+		mpx, spx = self._GetTKP(xs, xe, mix, six)
+		mpy, spy = self._GetTKP(ys, ye, miy, siy)
+		# set sub grid style
+		dc.SetPen(wx.Pen(wx.Colour(70,70,70), 1.0))
+		# Get tik positions in pixels
+		X, Y = self.GetPixels(spx, spy)
+		# draw grid lines
+		for x in X: dc.DrawLine(x, t, x, H-b-1)
+		for y in Y: dc.DrawLine(l, y, W-r-1, y)
+		# set main grid style
+		dc.SetPen(wx.Pen(wx.Colour(150,150,150), 1.0))
+		# Get tik positions in pixels
+		X, Y = self.GetPixels(mpx, mpy)
+		# draw grid lines
+		for x in X: dc.DrawLine(x, t, x, H-b-1)
+		for y in Y: dc.DrawLine(l, y, W-r-1, y)
+		# done
+		return
+
+	# get tick interval
+	# vs: value_start
+	# ve: value_end
+	# n : expected number of ticks
+	# returns the main tik interval "mn" and the  sub ticks interval "sb"
+	def _GetTKI(self, vs, ve, n):
+
+		#         0     1     2     3     4     5     6     7     8     9    10    11
+		tt = [0.010,0.020,0.025,0.050,0.100,0.200,0.250,0.500,1.000,2.000,2.500,5.000]
+		ss = [    5,    4,    5,    5,    5,    4,    5,    5,    5,    4,    5,    5]
+
+		ln10 = 2.3025850929940459
+
+		# main parameters
+		rg = ve-vs 									# scale range
+		du = np.exp(np.floor(np.log10(rg))*ln10) 	# decade multiplier
+		dg = np.floor(rg/du) 						# digits number
+		if dg<1.0: dg=1.0 							# fail safe
+
+		# find optimum number of tiks
+		i=0
+		for t in tt:
+			m = np.floor(rg/du/t) 	# number of intervals
+			if m < n: 				# first match
+				break
+			i=i+1
+
+		mn = du*t 					# main ticks intervals
+		sb = mn/ss[i] 				# sub ticks intervals
+
+		return mn, sb
+
+	# get ticks positions
+	# vs: value_start
+	# ve: value_end
+	# mn: main_interval (see _GetTKI)
+	# sb:  sub_interval (see _GetTKI)
+	# returns the main tick positions "mp" and the sub tick positions "sp"
+	def _GetTKP(self, vs, ve, mn, sb):
+		# main ticks
+		ns =  np.ceil(vs/mn-0.001)*mn 		# start value
+		ne = np.floor(ve/mn+0.001)*mn 		# end value
+		p = round((ne-ns)/mn)+1 			# fail safe
+		mp = np.linspace(ns,ne,p) 			# list of main positions
+		# sub ticks
+		ns =  np.ceil(vs/sb+0.001)*sb 		# start value
+		ne = np.floor(ve/sb-0.001)*sb 		# end value
+		p = round((ne-ns)/sb)+1 			# fail safe
+		sp = np.linspace(ns,ne,p) 			# list of sub positions
+		# done
+		return mp, sp
