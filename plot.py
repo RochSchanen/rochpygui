@@ -8,7 +8,7 @@
 import wx
 
 # numpy: https://numpy.org/
-import numpy as np
+from numpy import exp, log10, floor, ceil, linspace
 
 # LOCAL
 from theme import *
@@ -36,10 +36,10 @@ class _screen(wx.Control):
         self.size   = Width, Height
 
         # LOCAL
+        self.tool       = None
         self.buffer     = None
         self.position   = 0, 0
         self.clipArea   = 0, 0, 0, 0
-        self.tool       = None
 
         # set geometry
         self.SetSize(self.size)
@@ -147,7 +147,7 @@ class _tool():
 
     # self deselect method
     def Deselect(self):
-        # Bind Screen events to this tool handler methods
+        # Unbind Screen events to this tool handler methods
         self.scr.Unbind(wx.EVT_LEFT_DOWN)
         self.scr.Unbind(wx.EVT_MOTION)
         self.scr.Unbind(wx.EVT_LEFT_UP)
@@ -184,11 +184,6 @@ class _dragBuffer(_tool):
             p, q = self.scrStart
             # update buffer position
             P, Q = p+X-x, q+Y-y
-            # # coerce position
-            # w, h = self.scr.buffer.GetSize()
-            # W, H = self.scr.size
-            # P, Q = max(P, 0),   max(Q, 0)
-            # P, Q = min(P, w-W), min(Q, h-H)
             # set postition
             self.scr.position = P, Q
             # invoque the _onPaint method
@@ -220,10 +215,19 @@ _opt = 1
 _DRAW_BOX       = _opt; _opt<<=1
 _DRAW_AXIS      = _opt; _opt<<=1
 _DRAW_GRID      = _opt; _opt<<=1
-_DRAW_LABELS    = _opt; _opt<<=1
 _DRAW_PLOTS     = _opt; _opt<<=1
 
+_LABELS_LEFT    = _opt; _opt<<=1
+_LABELS_RIGHT   = _opt; _opt<<=1
+_LABELS_TOP     = _opt; _opt<<=1
+_LABELS_BOTTOM  = _opt; _opt<<=1
+
 _SKIP_BORDERS   = _opt; _opt<<=1
+
+_DRAW_LABELS = (_LABELS_BOTTOM
+              | _LABELS_TOP
+              | _LABELS_RIGHT
+              | _LABELS_LEFT)
 
 class _graph():
 
@@ -244,13 +248,13 @@ class _graph():
         # done
         return
 
-    def DrawGraph(self, dc):
+    def Draw(self, dc):
         if self.scale:
-            if self.style & _DRAW_GRID:  self._drawGrid(dc)
-            if self.style & _DRAW_AXIS:  self._drawAxis(dc)
-            if self.style & _DRAW_BOX:   self._drawBox(dc)
-            # ...
-        else: print("DrawGraph(): undefined scale.")
+            if self.style & _DRAW_GRID:   self._drawGrid(dc)
+            if self.style & _DRAW_AXIS:   self._drawAxis(dc)
+            if self.style & _DRAW_BOX:    self._drawBox(dc)
+            if self.style & _DRAW_LABELS: self._drawLabels(dc)
+        else: print("_graph.Draw(): undefined scale.")
         return
 
     def SetSize(self, Size):
@@ -274,6 +278,14 @@ class _graph():
 
     def StyleClear(self, StyleFlag):
         self.style &= ~StyleFlag
+        return
+
+    def SetFont(self, Font):
+        self.font = Font
+        return
+
+    def SetFormat(self, Format):
+        self.format = Format
         return
 
     # Compute scale such that:
@@ -381,37 +393,24 @@ class _graph():
         # done
         return
 
-    # get tick interval
-    # vs: value_start
-    # ve: value_end
-    # n : expected number of ticks
-    # returns the main tik interval "mn" and the  sub ticks interval "sb"
-    def _getTKI(self, vs, ve, n):
-
-        #         0     1     2     3     4     5     6     7     8     9    10    11
-        tt = [0.010,0.020,0.025,0.050,0.100,0.200,0.250,0.500,1.000,2.000,2.500,5.000]
-        ss = [    5,    4,    5,    5,    5,    4,    5,    5,    5,    4,    5,    5]
-
+    # get Interval for an optimum number of ticks
+    def _getTKI(self, valStart, valStop, nTicks):
+        # trial table
+        T = [0.010,0.020,0.025,0.050,0.100,0.200,0.250,0.500,1.000,2.000,2.500,5.000]
+        # the ticks sub division interval is fixed to be human readable
+        S = [    5,    4,    5,    5,    5,    4,    5,    5,    5,    4,    5,    5]
         ln10 = 2.3025850929940459
-
-        # main parameters
-        rg = ve-vs                                  # scale range
-        du = np.exp(np.floor(np.log10(rg))*ln10)    # decade multiplier
-        dg = np.floor(rg/du)                        # digits number
-        if dg<1.0: dg=1.0                           # fail safe
-
-        # find optimum number of tiks
-        i=0
-        for t in tt:
-            m = np.floor(rg/du/t)   # number of intervals
-            if m < n:               # first match
-                break
-            i=i+1
-
-        mn = du*t                   # main ticks intervals
-        sb = mn/ss[i]               # sub ticks intervals
-
-        return mn, sb
+        span = valStop - valStart           # get data span
+        dec = exp(ln10*floor(log10(span)))  # get decade
+        span /= dec                         # re-scale span
+        # find number of tiks closest to n
+        i=0; m=floor(span/T[i])             # first trial
+        while m > nTicks:                   # next ?
+            i+=1; m=floor(span/T[i])        # try again 
+        # get results
+        mti = dec*T[i]                      # main ticks interval
+        sti = mti/S[i]                      # sub ticks interval
+        return mti, sti
 
     # get ticks positions
     # vs: value_start
@@ -419,19 +418,75 @@ class _graph():
     # mn: main_interval (see _GetTKI)
     # sb:  sub_interval (see _GetTKI)
     # returns the main tick positions "mp" and the sub tick positions "sp"
-    def _getTKP(self, vs, ve, mn, sb):
+    def _getTKP(self, valStart, valStop, mti, sti):
         # main ticks
-        ns =  np.ceil(vs/mn-0.001)*mn       # start value
-        ne = np.floor(ve/mn+0.001)*mn       # end value
-        p = round((ne-ns)/mn)+1             # fail safe
-        mp = np.linspace(ns,ne,p)           # list of main positions
+        ns = ceil(valStart/mti-0.001)*mti  # start
+        ne = floor(valStop/mti+0.001)*mti  # end
+        p  = round((ne-ns)/mti)+1          # fail safe
+        mp = linspace(ns,ne,p)             # main positions
         # sub ticks
-        ns =  np.ceil(vs/sb+0.001)*sb       # start value
-        ne = np.floor(ve/sb-0.001)*sb       # end value
-        p = round((ne-ns)/sb)+1             # fail safe
-        sp = np.linspace(ns,ne,p)           # list of sub positions
+        ns = ceil(valStart/sti+0.001)*sti  # start
+        ne = floor(valStop/sti-0.001)*sti  # end
+        p  = round((ne-ns)/sti)+1          # fail safe
+        sp = linspace(ns,ne,p)             # sub positions
         # done
         return mp, sp
+
+    def _drawLabels(self, dc):
+        # get geometry
+        W, H = self.size
+        X, Y = self._getPixels(0.0, 0.0)
+        l, r, t, b = self.border
+        xs, xe, ys, ye = self.limit
+        # get style
+        nx, ny = self.ticks
+
+        # get ticks intervals
+        mix, six = self._getTKI(xs, xe, nx)
+        miy, siy = self._getTKI(ys, ye, ny)
+        # find edge coordinates
+        xs, ys = self._getCoords(l, H-b-1) # ?
+        xe, ye = self._getCoords(W-r-1, t) # ?
+        # get tick positions (coordinates)
+        mpx, spx = self._getTKP(xs, xe, mix, six)
+        mpy, spy = self._getTKP(ys, ye, miy, siy)
+        # get mains tick positions (pixels)
+        X, Y = self._getPixels(mpx, mpy)
+        # get style
+        dc.SetFont(self.font)
+        dc.SetTextForeground(wx.Colour(250,250,250))
+
+        if self.style & (_LABELS_BOTTOM | _LABELS_TOP):
+            # get formatting
+            n, d = self.format['x']                # length, decimals
+            f = f'%.{d}f'                          # string format
+            # draw horizontal labels
+            for x, v in zip(X, mpx):
+                # get label string
+                lT = f % v                                   
+                lW, lH = dc.GetTextExtent(lT)      # get size
+                p = x-lW/2                         # get position
+                p = max(p, l)                      # coerce to min
+                p = min(p, W-r-lW)                 # coerce to max
+                if self.style & _LABELS_TOP:    dc.DrawText(lT, p, t-lH)
+                if self.style & _LABELS_BOTTOM: dc.DrawText(lT, p, H-b)
+
+        if self.style & (_LABELS_LEFT | _LABELS_RIGHT):
+            # get formatting
+            n, d = self.format['y']                # length, decimals
+            f = f'%.{d}f'                          # string format
+            # draw horizontal labels
+            for y, v in zip(Y, mpy):
+                # get label string
+                lT = f % v                                   
+                lW, lH = dc.GetTextExtent(lT)      # get size
+                q = y-lH/2                         # get position
+                q = max(q, t)                      # coerce to min
+                q = min(q, H-b-lH)                 # coerce to max
+                if self.style & _LABELS_LEFT:  dc.DrawText(lT, l-lW, q)
+                if self.style & _LABELS_RIGHT: dc.DrawText(lT, W-r, q)
+
+        return
 
 ###############################################################################
 #################################### PLOT #####################################
@@ -441,40 +496,88 @@ class _plot(_screen):
 
     def Start(self):
 
-        self.clipArea  = 30, 30, 30, 30
+        ln10 = 2.3025850929940459
 
-        # get geometry
+        font = Theme.GetFont()
+
+        LabelFormat = {
+            "x": [3, 2],
+            "y": [3, 2]}
+
+        # FIND TEXT SIZE FOR LABELS
+
+        dc = wx.ClientDC(self)
+        dc.SetFont(font)
+
+        n, d = LabelFormat['x']                # length, decimals
+        f = f'%.{d}f'                          # get format string
+        v = -(exp(ln10*(n+d))-1)/exp(ln10*(d)) # full size value
+        Width, tmp = dc.GetTextExtent(f % v)   # get width
+        print(f % v)
+
+        n, d = LabelFormat['y']                # length, decimals
+        f = f'%.{d}f'                          # get format string
+        v = -(exp(ln10*(n+d))-1)/exp(ln10*(d)) # full size value
+        tmp, Height = dc.GetTextExtent(f % v)  # get width
+        print(f % v)
+
+        labelSize = Width, Height        
+
+        # SET BORDER SIZE
+        W, H = labelSize
+        l, r, t, b = W, W, H, H
+        l, r, t, b = l+20, r+20, t+20, b+20
+        self.clipArea  = l, r, t, b
+
+        # get screen geometry
         W, H = self.Size
-        l, r, t, b = self.clipArea
         w, h = W-l-r, H-t-b
         
         # create buffer
-        self.buffer = wx.EmptyBitmap(3*w, 3*h, wx.BITMAP_SCREEN_DEPTH)
-        self.position = (3*w-W)/2, (3*h-H)/2
+        self.buffer = wx.Bitmap(3*w, 3*h, wx.BITMAP_SCREEN_DEPTH)
+        self.position = w-l, h-t
+
+        # create and setup graph for drawing buffer:
+        g = _graph()
+        g.SetSize(self.buffer.GetSize())
+        g.SetBorder(w, w, h, h)
+        g.SetLimit(-10.32, +10.17, -10.13, +10.38)
+        g.StyleSet(_DRAW_AXIS | _DRAW_GRID)
+        g.StyleSet(_SKIP_BORDERS)
+
+        self.bufferGraph = g
+
+        # create and setup graph for onPaint refresh:
+        g = _graph()
+        g.SetSize(self.GetSize())
+        g.SetBorder(l, r, t, b)
+        g.SetLimit(-10.32, +10.17, -10.13, +10.38)
+        g.StyleSet(_DRAW_BOX | _DRAW_LABELS)
+        g.SetFont(font)
+        g.SetFormat(LabelFormat)
+
+        self.OnPaintGraph = g
+
+        # CLEAR AND DRAW BUFFER
 
         # create context
         dc = wx.MemoryDC()      
         dc.SelectObject(self.buffer)
-
         # clear buffer
         dc.SetBackground(wx.Brush(wx.Colour(0,0,0)))
         dc.Clear()
-        # create and setup graph:
-        # the graph object is similar to a pen or a brush
-        # but produces a more complex result:
-        g = _graph()
-        g.SetSize(self.buffer.GetSize())
-        g.SetBorder(w, w, h, h)
-        g.SetLimit(-1.0, +1.0, -1.0, +1.0)
-        g.StyleSet(_DRAW_BOX | _DRAW_AXIS | _DRAW_GRID)
-        g.StyleSet(_SKIP_BORDERS)
         # now draw  graph on buffer
-        g.DrawGraph(dc)
-
+        self.bufferGraph.Draw(dc)
         # and release device context
         dc.SelectObject(wx.NullBitmap)
 
-        d = _dragBuffer(self)
-        self.ToolSelect(d)      
+        # SETUP DRAG TOOL
 
+        # d = _dragBuffer(self)
+        # self.ToolSelect(d)
+
+        return
+
+    def onPaint(self, dc):
+        self.OnPaintGraph.Draw(dc)
         return

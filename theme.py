@@ -23,7 +23,7 @@ _ImageLibraries = {
         "Blue"      : [(5, 1), (6, 1)],
         "Yellow"    : [(1, 2), (2, 2)],
         "White"     : [(3, 2), (4, 2)],
-        },
+    },
 
     "Push":{
         "path"      :"606060_PUSH.png",
@@ -36,7 +36,7 @@ _ImageLibraries = {
         "Left"      : [(3, 2), (4, 2)],
         "Up"        : [(5, 2), (6, 2)],
         "Right"     : [(7, 2), (8, 2)],
-        },
+    },
 
     "LEDSwitch":{
         "path"      :"606060_SWITCH.png",
@@ -49,7 +49,7 @@ _ImageLibraries = {
         "Green"     : [(5, 2), (6, 2), (7, 2), (8, 2)],
         "White"     : [(1, 3), (2, 3), (3, 3), (4, 3)],
         "Yellow"    : [(5, 3), (6, 3), (7, 3), (8, 3)]
-        },
+    },
 
     "LEDRadio":{
         "path"      :"606060_SWITCH.png",
@@ -62,7 +62,7 @@ _ImageLibraries = {
         "Green"     : [(5, 2), (8, 2)],
         "White"     : [(1, 3), (4, 3)],
         "Yellow"    : [(5, 3), (8, 3)]
-        },
+    },
 
     "Decoration":{
         "path"      :"606060_DECOR.png",
@@ -75,9 +75,9 @@ _ImageLibraries = {
         "Ridge"     : [(1, 1)],
         "Inset"     : [(2, 2)],
         "Outset"    : [(2, 1)],
-        }
-
     }
+
+}
 
 # Extract and store bitmaps from png files
 class _lib():
@@ -141,12 +141,43 @@ class _lib():
         # done
         return pngs
 
+_fontLibrary = {
+    "Helvetica":{
+        "size"      : 9,
+        "familly"   : wx.FONTFAMILY_ROMAN,
+        "style"     : wx.FONTSTYLE_NORMAL,
+        "weight"    : wx.FONTWEIGHT_NORMAL,
+        "underline" : False,
+        "faceName"  : "Helvetica",
+        "encoding"  : wx.FONTENCODING_DEFAULT
+    }    
+}
+
 class _Theme():
 
     def __init__(self):
         self.path   = "./resources/themes/dark/"
         self.libs   = {}
+        self.fonts  = {}
         return
+
+    def GetFont(self, FontName = "Helvetica"):
+        if FontName in _fontLibrary:
+            ref = _fontLibrary[FontName]
+            siz = ref["size"]
+            fam = ref["familly"]
+            sty = ref["style"]
+            wei = ref["weight"]
+            und = ref["underline"]
+            fac = ref["faceName"]
+            enc = ref["encoding"]
+            font = wx.Font(siz,fam,sty,wei,und,fac,enc)
+        else:
+            print("in 'theme.py',")
+            print("undefined FontName '%s'." % FontName)
+            font = None
+        # done
+        return font
 
     def GetValue(self, libName, valName):
         # check libName exists

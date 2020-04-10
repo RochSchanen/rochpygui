@@ -287,7 +287,7 @@ class Group:
         # get the group geometry
         w, h = self.GetSize()
         # create bitmap of the same size
-        Ctrl.BackgroundBitmap = wx.EmptyBitmap(w, h)
+        Ctrl.BackgroundBitmap = wx.Bitmap(w, h)
         # create device context for drawing
         dc = wx.MemoryDC()
         dc.SelectObject(Ctrl.BackgroundBitmap)
@@ -354,7 +354,7 @@ class _decorationsLibrary():
                 # get geometry
                 r, l, t, b = 3, 3, 3, 3
                 # create sample bitmap
-                Sample = wx.EmptyBitmap(32, 32, wx.BITMAP_SCREEN_DEPTH)
+                Sample = wx.Bitmap(32, 32, wx.BITMAP_SCREEN_DEPTH)
                 # create dc
                 dc = wx.MemoryDC()
                 dc.SelectObject(Sample)
@@ -379,7 +379,7 @@ class _decorationsLibrary():
         W, H = Sample.GetSize()
         w, h = width, height
         # create Bitmap
-        Bitmap = wx.EmptyBitmap(w, h, wx.BITMAP_SCREEN_DEPTH)
+        Bitmap = wx.Bitmap(w, h, wx.BITMAP_SCREEN_DEPTH)
         # create dc
         dc = wx.MemoryDC()
         dc.SelectObject(Bitmap)

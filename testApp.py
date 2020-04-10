@@ -20,7 +20,7 @@ class myApp(App):
     def Start(self):
 
         # create plot
-        P = _plot(self.Panel, 500, 500)
+        P = _plot(self.Panel, 600, 600)
 
         # set content
         Content = Group(VERTICAL)
