@@ -11,8 +11,7 @@ from layout     import *
 from display    import *
 from buttons    import *
 from controls   import *
-
-from plot import _plot
+from plot       import *
 
 # create app
 class myApp(App):
@@ -20,7 +19,7 @@ class myApp(App):
     def Start(self):
 
         # create plot
-        P = _plot(self.Panel, 600, 600)
+        P = Plot(self.Panel, 600, 600)
 
         # set content
         Content = Group(VERTICAL)
