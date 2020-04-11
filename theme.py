@@ -143,7 +143,7 @@ class _lib():
 
 _fontLibrary = {
     "Helvetica":{
-        "size"      : 9,
+        "size"      : 10,
         "familly"   : wx.FONTFAMILY_ROMAN,
         "style"     : wx.FONTSTYLE_NORMAL,
         "weight"    : wx.FONTWEIGHT_NORMAL,

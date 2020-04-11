@@ -4,6 +4,11 @@
 # created; 2020 April 11
 # repository; https://github.com/RochSchanen/rochpygui
 
+# todo: - rationalise extra border EB
+# todo: - eventually remove DEBUG
+
+DEBUG = False
+
 # wxpython: https://www.wxpython.org/
 import wx
 
@@ -23,17 +28,17 @@ DRAW_AXIS      = _opt; _opt<<=1
 DRAW_GRID      = _opt; _opt<<=1
 DRAW_PLOTS     = _opt; _opt<<=1
 
-DRAW_LABELS_LEFT    = _opt; _opt<<=1
-DRAW_LABELS_RIGHT   = _opt; _opt<<=1
-DRAW_LABELS_TOP     = _opt; _opt<<=1
-DRAW_LABELS_BOTTOM  = _opt; _opt<<=1
+DRAW_LABEL_LEFT    = _opt; _opt<<=1
+DRAW_LABEL_RIGHT   = _opt; _opt<<=1
+DRAW_LABEL_TOP     = _opt; _opt<<=1
+DRAW_LABEL_BOTTOM  = _opt; _opt<<=1
+
+DRAW_LABELS = (DRAW_LABEL_BOTTOM
+             | DRAW_LABEL_TOP
+             | DRAW_LABEL_RIGHT
+             | DRAW_LABEL_LEFT)
 
 SKIP_BORDERS   = _opt; _opt<<=1
-
-DRAW_LABELS = (DRAW_LABELS_BOTTOM
-             | DRAW_LABELS_TOP
-             | DRAW_LABELS_RIGHT
-             | DRAW_LABELS_LEFT)
 
 class Graph():
 
@@ -143,7 +148,7 @@ class Graph():
         l, r, t, b = self.border
         # setup style
         dc.SetBrush(wx.TRANSPARENT_BRUSH)
-        dc.SetPen(wx.Pen(wx.Colour(150,150,0), 1.0))
+        dc.SetPen(wx.Pen(wx.Colour(150,150,150), 1.0))
         # draw box
         dc.DrawRectangle(l, t, W-l-r, H-t-b)
         # done
@@ -262,7 +267,7 @@ class Graph():
         dc.SetFont(self.font)
         dc.SetTextForeground(wx.Colour(250,250,250))
 
-        if self.style & (DRAW_LABELS_BOTTOM | DRAW_LABELS_TOP):
+        if self.style & (DRAW_LABEL_BOTTOM | DRAW_LABEL_TOP):
             # get formatting
             n, d = self.format['x']                # length, decimals
             f = f'%.{d}f'                          # string format
@@ -274,10 +279,17 @@ class Graph():
                 p = x-lW/2                         # get position
                 p = max(p, l)                      # coerce to min
                 p = min(p, W-r-lW)                 # coerce to max
-                if self.style & DRAW_LABELS_TOP:    dc.DrawText(lT, p, t-lH)
-                if self.style & DRAW_LABELS_BOTTOM: dc.DrawText(lT, p, H-b)
+                if self.style & DRAW_LABEL_TOP:    dc.DrawText(lT, p, t-lH)
+                if self.style & DRAW_LABEL_BOTTOM: dc.DrawText(lT, p, H-b)
 
-        if self.style & (DRAW_LABELS_LEFT | DRAW_LABELS_RIGHT):
+                if DEBUG:
+                    dc.SetBrush(wx.TRANSPARENT_BRUSH)
+                    if self.style & DRAW_LABEL_TOP:
+                        dc.DrawRectangle(p, t-lH, lW, lH)
+                    if self.style & DRAW_LABEL_BOTTOM:
+                        dc.DrawRectangle(p, H-b, lW, lH)
+
+        if self.style & (DRAW_LABEL_LEFT | DRAW_LABEL_RIGHT):
             # get formatting
             n, d = self.format['y']                # length, decimals
             f = f'%.{d}f'                          # string format
@@ -287,9 +299,17 @@ class Graph():
                 lT = f % v                                   
                 lW, lH = dc.GetTextExtent(lT)      # get size
                 q = y-lH/2                         # get position
-                q = max(q, t)                      # coerce to min
-                q = min(q, H-b-lH)                 # coerce to max
-                if self.style & DRAW_LABELS_LEFT:  dc.DrawText(lT, l-lW, q)
-                if self.style & DRAW_LABELS_RIGHT: dc.DrawText(lT, W-r, q)
+                EB = 5 # add small extra border (quick fix)
+                # q = max(q, t)                      # coerce to min
+                # q = min(q, H-b-lH)                 # coerce to max
+                if self.style & DRAW_LABEL_LEFT:  dc.DrawText(lT, l-lW-EB, q)
+                if self.style & DRAW_LABEL_RIGHT: dc.DrawText(lT, W-r+EB, q)
+
+                if DEBUG:
+                    dc.SetBrush(wx.TRANSPARENT_BRUSH)
+                    if self.style & DRAW_LABEL_LEFT:
+                        dc.DrawRectangle(l-lW-EB, q, lW, lH)
+                    if self.style & DRAW_LABEL_RIGHT:
+                        dc.DrawRectangle(W-r+EB, q, lW, lH)
 
         return

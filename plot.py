@@ -25,7 +25,7 @@ class Plot(Screen):
         # get font style
         font = Theme.GetFont()
         # set label format
-        LabelFormat = {"x": [3, 2], "y": [3, 2]}
+        LabelFormat = {"x": [2, 2], "y": [2, 2]}
         # set default limits
         xs, xe, ys, ye = -11.32, +10.17, -10.13, +10.38
 
@@ -36,17 +36,17 @@ class Plot(Screen):
         n, d = LabelFormat['x']                # length, decimals
         f = f'%.{d}f'                          # get format string
         v = -(exp(ln10*(n+d))-1)/exp(ln10*(d)) # get maximum value
-        Width, tmp = dc.GetTextExtent(f % v)   # get width
+        Width, dum = dc.GetTextExtent(f % v)   # get width
         n, d = LabelFormat['y']                # length, decimals
         f = f'%.{d}f'                          # get format string
         v = -(exp(ln10*(n+d))-1)/exp(ln10*(d)) # get maximum value
-        tmp, Height = dc.GetTextExtent(f % v)  # get height
+        dum, Height = dc.GetTextExtent(f % v)  # get height
 
         # SETUP SCREEN:
 
-        # border area
-        l, r, t, b = Width, Width, Height, Height   # label
-        l, r, t, b = l+20, r+20, t+20, b+20         # extra
+        # border area (plus extra border EB)
+        EB = 5
+        l, r, t, b = Width+EB, Width+EB, Height, Height # space for labels
         self.clipArea  = l, r, t, b
         # buffer
         W, H = self.Size
@@ -75,7 +75,8 @@ class Plot(Screen):
         g.SetSize(self.GetSize())
         g.SetBorder(l, r, t, b)
         g.SetLimit(xs, xe, ys, ye)
-        g.StyleSet(DRAW_BOX | DRAW_LABELS)
+        # g.StyleSet(DRAW_BOX | DRAW_LABELS)
+        g.StyleSet(DRAW_LABELS)
         g.SetFont(font)
         g.SetFormat(LabelFormat)
 

@@ -418,7 +418,7 @@ class _decorationsLibrary():
 
     def _TileHorizontally(self, dc, tile, x, y, width):
         w, h = tile.GetSize()
-        for i in range(width / w):
+        for i in range(int(width/w)):
             dc.DrawBitmap(tile, x, y)
             x += w
         remainder = width % w
@@ -429,7 +429,7 @@ class _decorationsLibrary():
 
     def _TileVertically(self, dc, tile, x, y, height):
         w, h = tile.GetSize()
-        for i in range(height / h):
+        for i in range(int(height/h)):
             dc.DrawBitmap(tile, x, y)
             y += h
         remainder = height % h
