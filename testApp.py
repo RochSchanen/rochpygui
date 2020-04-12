@@ -19,11 +19,21 @@ class myApp(App):
     def Start(self):
 
         # create plot
-        P1 = Plot(self.Panel, 500, 500)
+        P = Plot(self.Panel, 600, 600)
+
+        P.SetXLabel("Generator frequency / Hz")
+        P.SetXLimit(123.0019, +123.0051)
+        P.SetXFormat(3, 4)
+        P.SetXTicks(5)
+
+        P.SetYLabel("Lockin output / V")
+        P.SetYLimit(-1.10, +1.10)
+        P.SetYFormat(1, 2)
+        P.SetYTicks(9)
 
         # set content
         Content = Group(VERTICAL)
-        Content.Place(P1)
+        Content.Place(P)
 
         # draw once and set size
         Content.DrawAllDecorations(self.Panel)

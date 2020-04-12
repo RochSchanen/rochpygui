@@ -6,6 +6,10 @@
 
 # todo: - rationalise extra border EB
 # todo: - eventually remove DEBUG
+# todo: - set right label alignment to the right
+#       (sign changes are shifting the text position)
+# todo: - There seems to be a difference between labels and main ticks!
+#       (in some rare circumptances, there is more labels than main ticks)
 
 DEBUG = False
 
@@ -50,12 +54,20 @@ class Graph():
         self.border = 0, 0, 0, 0  # these are the border around the box
 
         # style defines which elements are drawn onto the bitmap and how:
-        self.style  = 0    # default style
-        self.ticks  = 7, 7 # expected number of ticks on the grid (x and y)
-        
+        self.style      = 0     # default style
+        self.ticks      = 7, 7  # expected number of ticks on the grid (x and y)
+        self.font       = None
+        self.leftText   = None
+        self.bottomText = None
+        self.xFormat    = [2, 1] # integer digits, decimal digits
+        self.yFormat    = [2, 1] # integer digits, decimal digits
+
         # scale is computed from size, limit and border:
-        self.scale  = None        
-        
+        self.scale     = None        
+
+        # extra border        
+        self.EB = 5 
+
         # done
         return
 
@@ -65,6 +77,7 @@ class Graph():
             if self.style & DRAW_AXIS:   self._drawAxis(dc)
             if self.style & DRAW_BOX:    self._drawBox(dc)
             if self.style & DRAW_LABELS: self._drawLabels(dc)
+            self._drawTitles(dc)
         else: print("_graph.Draw(): undefined scale.")
         return
 
@@ -95,8 +108,20 @@ class Graph():
         self.font = Font
         return
 
-    def SetFormat(self, Format):
-        self.format = Format
+    def SetXFormat(self, f):
+        self.xFormat = f
+        return
+
+    def SetYFormat(self, f):
+        self.yFormat = f
+        return
+
+    def SetLeftTitle(self, s):
+        self.leftText = s
+        return
+
+    def SetBottomTitle(self, s):
+        self.bottomText = s
         return
 
     # Compute scale such that:
@@ -172,7 +197,7 @@ class Graph():
     def _drawGrid(self, dc):
         # get geometry
         W, H = self.size
-        X, Y = self._getPixels(0.0, 0.0)
+        # X, Y = self._getPixels(0.0, 0.0)
         l, r, t, b = self.border
         if self.style & SKIP_BORDERS: l, r, t, b = 0, 0, 0, 0
         xs, xe, ys, ye = self.limit
@@ -246,41 +271,42 @@ class Graph():
     def _drawLabels(self, dc):
         # get geometry
         W, H = self.size
-        X, Y = self._getPixels(0.0, 0.0)
+        # X, Y = self._getPixels(0.0, 0.0)
         l, r, t, b = self.border
         xs, xe, ys, ye = self.limit
         # get style
         nx, ny = self.ticks
-
         # get ticks intervals
         mix, six = self._getTKI(xs, xe, nx)
         miy, siy = self._getTKI(ys, ye, ny)
         # find edge coordinates
-        xs, ys = self._getCoords(l, H-b-1) # ?
-        xe, ye = self._getCoords(W-r-1, t) # ?
+        # xs, ys = self._getCoords(l, H-b-1) # ?
+        # xe, ye = self._getCoords(W-r-1, t) # ?
         # get tick positions (coordinates)
         mpx, spx = self._getTKP(xs, xe, mix, six)
         mpy, spy = self._getTKP(ys, ye, miy, siy)
         # get mains tick positions (pixels)
         X, Y = self._getPixels(mpx, mpy)
-        # get style
+        # set style
         dc.SetFont(self.font)
-        dc.SetTextForeground(wx.Colour(250,250,250))
+        dc.SetTextForeground(wx.Colour(180,180,180))
 
         if self.style & (DRAW_LABEL_BOTTOM | DRAW_LABEL_TOP):
             # get formatting
-            n, d = self.format['x']                # length, decimals
-            f = f'%.{d}f'                          # string format
+            n, d = self.xFormat # length, decimals
+            f = f'%.{d}f'       # string format
             # draw horizontal labels
             for x, v in zip(X, mpx):
                 # get label string
                 lT = f % v                                   
-                lW, lH = dc.GetTextExtent(lT)      # get size
-                p = x-lW/2                         # get position
-                p = max(p, l)                      # coerce to min
-                p = min(p, W-r-lW)                 # coerce to max
-                if self.style & DRAW_LABEL_TOP:    dc.DrawText(lT, p, t-lH)
-                if self.style & DRAW_LABEL_BOTTOM: dc.DrawText(lT, p, H-b)
+                lW, lH = dc.GetTextExtent(lT) # get size
+                p = x-lW/2                    # get position
+                p = max(p, l)                 # coerce to min
+                p = min(p, W-r-lW)            # coerce to max
+                if self.style & DRAW_LABEL_TOP:
+                    dc.DrawText(lT, p, t-lH)
+                if self.style & DRAW_LABEL_BOTTOM:
+                    dc.DrawText(lT, p, H-b)
 
                 if DEBUG:
                     dc.SetBrush(wx.TRANSPARENT_BRUSH)
@@ -291,25 +317,43 @@ class Graph():
 
         if self.style & (DRAW_LABEL_LEFT | DRAW_LABEL_RIGHT):
             # get formatting
-            n, d = self.format['y']                # length, decimals
-            f = f'%.{d}f'                          # string format
+            n, d = self.yFormat # length, decimals
+            f = f'%.{d}f'       # string format
             # draw horizontal labels
             for y, v in zip(Y, mpy):
                 # get label string
                 lT = f % v                                   
-                lW, lH = dc.GetTextExtent(lT)      # get size
-                q = y-lH/2                         # get position
-                EB = 5 # add small extra border (quick fix)
-                # q = max(q, t)                      # coerce to min
-                # q = min(q, H-b-lH)                 # coerce to max
-                if self.style & DRAW_LABEL_LEFT:  dc.DrawText(lT, l-lW-EB, q)
-                if self.style & DRAW_LABEL_RIGHT: dc.DrawText(lT, W-r+EB, q)
+                lW, lH = dc.GetTextExtent(lT) # get size
+                q = y-lH/2                    # get position
+                if self.style & DRAW_LABEL_LEFT:
+                    dc.DrawText(lT, l-lW-self.EB, q)
+                if self.style & DRAW_LABEL_RIGHT:
+                    dc.DrawText(lT, W-r+self.EB, q)
 
                 if DEBUG:
                     dc.SetBrush(wx.TRANSPARENT_BRUSH)
                     if self.style & DRAW_LABEL_LEFT:
-                        dc.DrawRectangle(l-lW-EB, q, lW, lH)
+                        dc.DrawRectangle(l-lW-self.EB, q, lW, lH)
                     if self.style & DRAW_LABEL_RIGHT:
-                        dc.DrawRectangle(W-r+EB, q, lW, lH)
+                        dc.DrawRectangle(W-r+self.EB, q, lW, lH)
 
+        return
+
+    def _drawTitles(self, dc):
+        if self.font:
+            # get geometry
+            W, H = self.size
+            # set style
+            dc.SetFont(self.font)
+            dc.SetTextForeground(wx.Colour(180,180,180))
+            # draw left
+            if self.leftText:
+                lT = self.leftText
+                lW, lH = dc.GetTextExtent(lT)
+                dc.DrawRotatedText(lT, 0, H/2+lW/2, 90)
+            # draw botttom
+            if self.bottomText:
+                lT = self.bottomText
+                lW, lH = dc.GetTextExtent(lT)
+                dc.DrawRotatedText(lT, W/2-lW/2, H-lH, 0)
         return

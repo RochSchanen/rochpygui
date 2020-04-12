@@ -33,7 +33,6 @@ class Screen(wx.Control):
 
         # PARAMETERS
         self.parent = Parent
-        self.size   = Width, Height
 
         # LOCAL
         self.tool       = None
@@ -42,7 +41,7 @@ class Screen(wx.Control):
         self.clipArea   = 0, 0, 0, 0
 
         # set geometry
-        self.SetSize(self.size)
+        self.SetSize((Width, Height))
 
         # call user-defined constructor     
         self.Start()
@@ -75,7 +74,7 @@ class Screen(wx.Control):
             # get clip geometry
             l, r, t, b = self.clipArea
             x, y = self.position
-            w, h = self.size
+            w, h = self.GetSize()
             W, H = self.buffer.GetSize()
             # get clip image
             X, Y, P, Q = x+l, y+t, w-l-r, h-t-b
