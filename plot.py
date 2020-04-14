@@ -21,16 +21,14 @@ from graph  import *
 from screen import *
 
 ###############################################################################
-#################################### PLOT #####################################
+#################################### GraphicScreen ############################
 ###############################################################################
 
-class Plot(Screen):
+class GraphicScreen(Screen):
 
     def Start(self):
-
         # some defaults limits (to prevent singular expressions)
         xs, xe, ys, ye = -11.11, +11.11, -11.11, +11.11
-
         # create and setup graph for onPaint refresh:
         # (labels and titles)
         self.OnPaintGraph = Graph()
@@ -40,34 +38,24 @@ class Plot(Screen):
         # again some default format to prevent singularities
         self.OnPaintGraph.SetXFormat([2, 2])
         self.OnPaintGraph.SetYFormat([2, 2])
-        self.OnPaintGraph.StyleSet(DRAW_LABELS)
-        # get minimum border size to fit all the feature
-        # l, r, t, b = self._minBorder(self.OnPaintGraph)
-        # self.OnPaintGraph.SetBorder(l, r, t, b)
-
+        self.OnPaintGraph.StyleSet(DRAW_LABELS | DRAW_PLOTS)
         # setup screen
         W, H = self.GetSize()
         self.buffer   = wx.Bitmap(3*W, 3*H, wx.BITMAP_SCREEN_DEPTH)
         self.limit    = xs, xe, ys, ye
-        # self.clipArea = l, r, t, b
         self.origin   = W, H
         self.position = W,H
-
         # create and setup graph for drawing buffer:
         # (axis and grid)
         self.bufferGraph = Graph()
         self.bufferGraph.SetSize(self.buffer.GetSize())
-        # self.bufferGraph.SetBorder(W+l, W+r, H+t, H+b)
         self.bufferGraph.SetLimit(xs, xe, ys, ye)
-        self.bufferGraph.StyleSet(DRAW_AXIS | DRAW_GRID)
+        self.bufferGraph.StyleSet(DRAW_AXIS | DRAW_GRID | DRAW_PLOTS)
         self.bufferGraph.StyleSet(SKIP_BORDERS)
-
         # set border
         self._setBorder()
-
         # setup drag tool:
-        self.ToolSelect(Drag(self))
-
+        self.ToolSelect(_Drag(self))
         return
 
     def _setBorder(self):
@@ -193,7 +181,7 @@ class Plot(Screen):
         self.OnPaintGraph.Draw(dc)
         return
 
-class Drag(ScreenDragBuffer):
+class _Drag(ScreenDragBuffer):
 
     # superseed the previous _unlock() method to provide
     # a RefreshBuffer() at the end of the drag event
@@ -202,4 +190,3 @@ class Drag(ScreenDragBuffer):
             self.scr.RefreshBuffer()            
             self.lock = False
         return
-

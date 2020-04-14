@@ -6,11 +6,13 @@ A short description of the project files.
 - README.md: read it.
 - gitit.txt: git commands summary.
 - base.py: Simplified App/Frame/Panel library.
-- theme.py: theme resources (colors and image libraries).
-- layout.py: tools to manage the graphics layout.
-- display.py: tool for collecting images to display.
+- theme.py: theme resources (colors and image and font libraries).
+- layout.py: tools to manage the graphics layout and some decorations.
+- display.py: tool for collecting small images to display (used for buttons).
 - buttons.py: A collection of simple buttons: push, switch, radio.
 - controls.py: A root class for creating control objects.
-- plot.py: A module for ploting graph and others.
+- screen.py: A bitmap display with draggind tool.
+- graph.py: A pen, brush style tool to draw graphs.
+- plot.py: A module using screen and graph to dsiplay a data set.
 - myApp.py: user App minimum code.
 - testApp.py: demo App.

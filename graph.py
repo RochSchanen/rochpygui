@@ -10,6 +10,7 @@
 #       (sign changes are shifting the text position)
 # todo: - There seems to be a difference between labels and main ticks!
 #       (in some rare circumptances, there is more labels than main ticks)
+#       The algorithms for computing the ticks and labels must be exactly the same
 
 DEBUG = False
 
@@ -17,7 +18,9 @@ DEBUG = False
 import wx
 
 # numpy: https://numpy.org/
-from numpy import exp, log10, floor, ceil, linspace
+from numpy import exp, log10, floor, ceil, linspace, array
+
+from theme import *
 
 ###############################################################################
 ################################# GRAPH #######################################
@@ -61,6 +64,7 @@ class Graph():
         self.bottomText = None
         self.xFormat    = [2, 1] # integer digits, decimal digits
         self.yFormat    = [2, 1] # integer digits, decimal digits
+        self.plots      = {}     # list of plot to draw
 
         # scale is computed from size, limit and border:
         self.scale     = None        
@@ -77,8 +81,9 @@ class Graph():
             if self.style & DRAW_AXIS:   self._drawAxis(dc)
             if self.style & DRAW_BOX:    self._drawBox(dc)
             if self.style & DRAW_LABELS: self._drawLabels(dc)
+            if self.style & DRAW_PLOTS:  self._drawPlots(dc)
             self._drawTitles(dc)
-        else: print("_graph.Draw(): undefined scale.")
+        # else: print("_graph.Draw(): undefined scale.")
         return
 
     def SetSize(self, Size):
@@ -187,7 +192,7 @@ class Graph():
         if self.style & SKIP_BORDERS: l, r, t, b = 0, 0, 0, 0
         # setup style
         dc.SetBrush(wx.TRANSPARENT_BRUSH)
-        dc.SetPen(wx.Pen(wx.Colour(220,100,100), 1.0))
+        dc.SetPen(wx.Pen(wx.Colour(200,200,230), 2))
         # draw Axis
         dc.DrawLine(X, t, X, H-b-1)
         dc.DrawLine(l, Y, W-r-1, Y)
@@ -347,13 +352,142 @@ class Graph():
             dc.SetFont(self.font)
             dc.SetTextForeground(wx.Colour(180,180,180))
             # draw left
-            if self.leftText:
+            if len(self.leftText):
                 lT = self.leftText
                 lW, lH = dc.GetTextExtent(lT)
                 dc.DrawRotatedText(lT, 0, H/2+lW/2, 90)
             # draw botttom
-            if self.bottomText:
+            if len(self.bottomText):
                 lT = self.bottomText
                 lW, lH = dc.GetTextExtent(lT)
                 dc.DrawRotatedText(lT, W/2-lW/2, H-lH, 0)
+        return
+
+    def _drawPlots(self, dc):
+        # get geometry
+        W, H = self.size
+        l, r, t, b = self.border
+        if self.style & SKIP_BORDERS: l, r, t, b = 0, 0, 0, 0
+        dc.SetClippingRegion(l, t, W-l-r, H-t-b)
+        # draw
+        for plot in self.plots.values():
+            if len(plot.x) and len(plot.y):
+                # get data
+                X, Y   = self._getPixels(plot.x, plot.y)
+                points = list(zip(X, Y))
+                bitmap = plot.point
+                pw, ph = bitmap.GetSize()
+                pw, ph = round(pw/2), round(ph/2)
+                # draw lines
+                dc.SetPen(plot.pen)
+                dc.DrawLines(points)
+                # draw points
+                for x, y in points:
+                    dc.DrawBitmap(bitmap, x-pw, y-ph)
+
+                # DEBUG
+                # dc.SetPen(wx.Pen(wx.Colour(255,255,255)))
+                # for x, y in points:
+                #     dc.DrawPoint(x, y)
+                #     dc.DrawPoint(x-pw, y-ph)
+                #     dc.DrawPoint(x+pw, y+pw)
+
+        dc.DestroyClippingRegion()
+        return
+
+    def AddPlot(self, Name, X, Y):
+        # create object
+        p = _plot(X, Y)
+        # store
+        self.plots[Name] = p
+        # return reference
+        return p
+
+class _plot():
+
+    def __init__(self, X = [], Y = []):
+        # LOCAL
+        self.pen        = None
+        self.point      = None
+        self.colour     = None
+        # DEFAULTS
+        self.pointStyle = 'DOT','WHITE','MEDIUM'
+        self.lineStyle  = 'SOLID','THIN'
+        # PARAMETERS
+        self.x, self.y = array(X), array(Y)
+        # setup
+        self.SetPointStyle()
+        # done
+        return
+
+    def SetPointStyle(self, Styles = None):
+
+        SHAPES = {
+            'DOT'        : "DOT"}
+
+        COLOURS = {
+            'WHITE'      : "White",
+            'BLUE'       : "Blue",
+            'RED'        : "Red",
+            'GREEN'      : "Green"}
+
+        SIZES = {
+            'SMALL'      : "_0",
+            'MEDIUM'     : "_1",
+            'LARGE'      : "_2",
+            'EXTRALARGE' : "_3"}
+
+        # fit parameter type (Style must be a list)
+        if not isinstance(Styles, list): Styles = [Styles]
+        # get current values
+        shape, colour, size = self.pointStyle
+        # run through new values
+        for style in Styles:
+            if style in SHAPES.keys():  shape  = style
+            if style in COLOURS.keys(): colour = style
+            if style in SIZES.keys():   size   = style
+        # record new values
+        self.pointStyle = shape, colour, size
+        # store point
+        lib, images = Theme.GetImages(SHAPES[shape], COLOURS[colour])
+        self.point = lib.Get(COLOURS[colour] + SIZES[size])
+        # get colour from point bitmap
+        dc = wx.MemoryDC()               # setup device context
+        dc.SelectObject(self.point)      # select point as bitmap
+        w, h = self.point.GetSize()      # find center of bitmap
+        self.colour = dc.GetPixel(w/2, h/2)   # pick colour
+        dc.SelectObject(wx.NullBitmap)   # release device context
+        # update line color
+        self.SetLineStyle()
+        # done
+        return
+
+    def SetLineStyle(self, Styles = None):
+
+        DASHINGS = {
+            'DOT'        : wx.PENSTYLE_DOT,
+            'DOT DASH'   : wx.PENSTYLE_DOT_DASH,
+            'LONG DASH'  : wx.PENSTYLE_LONG_DASH,
+            'SHORT DASH' : wx.PENSTYLE_SHORT_DASH,
+            'SOLID'      : wx.PENSTYLE_SOLID,
+            'TRANSPARENT': wx.PENSTYLE_TRANSPARENT}
+
+        WIDTHS = {
+            'THIN'       : 1,
+            'MEDIUM'     : 2,
+            'THICK'      : 3}
+
+        # fit parameter type (Style must be a list)
+        if not isinstance(Styles, list): Styles = [Styles]
+        # get current values
+        dashing, width = self.lineStyle
+        # run through values
+        for style in Styles:
+            if style in DASHINGS.keys(): dashing = style
+            if style in WIDTHS.keys():   width   = style
+        # record new values
+        self.lineStyle = dashing, width
+        # store pen
+        self.pen = wx.Pen(self.colour, WIDTHS[width], DASHINGS[dashing])
+        # done
         return

@@ -12,6 +12,21 @@ TextColour       = wx.Colour(150, 150, 150)
 
 _ImageLibraries = {
 
+    # used by: "layout.py"
+    "Decoration":{
+        "path"      :"606060_DECOR.png",
+        "Grid"      : (2, 2),
+        "Size"      : (64, 64),
+        "Offset"    : (0, 0),
+        "Border"    : (8, 8, 8, 8),
+        # sets:
+        "Groove"    : [(1, 2)],
+        "Ridge"     : [(1, 1)],
+        "Inset"     : [(2, 2)],
+        "Outset"    : [(2, 1)],
+    },
+
+    # used by: "display.py", "buttons.py"
     "LED":{
         "path"      :"606060_LED.png",
         "Grid"      : (8, 2),
@@ -51,7 +66,7 @@ _ImageLibraries = {
         "Yellow"    : [(5, 3), (6, 3), (7, 3), (8, 3)]
     },
 
-    "LEDRadio":{
+    "LEDRadio":{    # same as LEDSwitch but with only two states.
         "path"      :"606060_SWITCH.png",
         "Grid"      : (8, 3),
         "Size"      : (28, 52),
@@ -64,17 +79,17 @@ _ImageLibraries = {
         "Yellow"    : [(5, 3), (8, 3)]
     },
 
-    "Decoration":{
-        "path"      :"606060_DECOR.png",
-        "Grid"      : (2, 2),
-        "Size"      : (64, 64),
+    # used by "graph.py", "plot.py"
+   "DOT":{
+        "path"      :"000000_DOT.png",
+        "Grid"      : (4, 4),
+        "Size"      : (25, 25),
         "Offset"    : (0, 0),
-        "Border"    : (8, 8, 8, 8),
         # sets:
-        "Groove"    : [(1, 2)],
-        "Ridge"     : [(1, 1)],
-        "Inset"     : [(2, 2)],
-        "Outset"    : [(2, 1)],
+        "White"     : [(1, 1), (2, 1), (3, 1), (4, 1)],
+        "Blue"      : [(1, 2), (2, 2), (3, 2), (4, 2)],
+        "Red"       : [(1, 3), (2, 3), (3, 3), (4, 3)],
+        "Green"     : [(1, 4), (2, 4), (3, 4), (4, 4)]
     }
 
 }
