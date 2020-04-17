@@ -11,6 +11,7 @@
 # todo: - There seems to be a difference between labels and main ticks!
 #       (in some rare circumptances, there is more labels than main ticks)
 #       The algorithms for computing the ticks and labels must be exactly the same
+# todo: Last, remove unused debug features
 
 DEBUG = False
 
@@ -64,7 +65,7 @@ class Graph():
         self.bottomText = None
         self.xFormat    = [2, 1] # integer digits, decimal digits
         self.yFormat    = [2, 1] # integer digits, decimal digits
-        self.plots      = {}     # list of plot to draw
+        self.plots      = []     # list of plot to draw
 
         # scale is computed from size, limit and border:
         self.scale     = None        
@@ -192,7 +193,7 @@ class Graph():
         if self.style & SKIP_BORDERS: l, r, t, b = 0, 0, 0, 0
         # setup style
         dc.SetBrush(wx.TRANSPARENT_BRUSH)
-        dc.SetPen(wx.Pen(wx.Colour(200,200,230), 2))
+        dc.SetPen(wx.Pen(wx.Colour(150,150,150), 3))
         # draw Axis
         dc.DrawLine(X, t, X, H-b-1)
         dc.DrawLine(l, Y, W-r-1, Y)
@@ -370,7 +371,7 @@ class Graph():
         if self.style & SKIP_BORDERS: l, r, t, b = 0, 0, 0, 0
         dc.SetClippingRegion(l, t, W-l-r, H-t-b)
         # draw
-        for plot in self.plots.values():
+        for plot in self.plots:
             if len(plot.x) and len(plot.y):
                 # get data
                 X, Y   = self._getPixels(plot.x, plot.y)
@@ -385,27 +386,27 @@ class Graph():
                 for x, y in points:
                     dc.DrawBitmap(bitmap, x-pw, y-ph)
 
-                # DEBUG
-                # dc.SetPen(wx.Pen(wx.Colour(255,255,255)))
-                # for x, y in points:
-                #     dc.DrawPoint(x, y)
-                #     dc.DrawPoint(x-pw, y-ph)
-                #     dc.DrawPoint(x+pw, y+pw)
+                if DEBUG:
+                    for x, y in points:
+                        dc.SetPen(wx.Pen(wx.Colour(100,100,100)))
+                        dc.DrawRectangle(x-pw, y-pw, 2*pw, 2*ph)
+                        dc.SetPen(wx.Pen(wx.Colour(255,255,255)))
+                        dc.DrawPoint(x, y)
 
         dc.DestroyClippingRegion()
         return
 
-    def AddPlot(self, Name, X, Y):
+    def AddPlot(self):
         # create object
-        p = _plot(X, Y)
+        p = _plot()
         # store
-        self.plots[Name] = p
+        self.plots.append(p)
         # return reference
         return p
 
 class _plot():
 
-    def __init__(self, X = [], Y = []):
+    def __init__(self):
         # LOCAL
         self.pen        = None
         self.point      = None
@@ -414,10 +415,16 @@ class _plot():
         self.pointStyle = 'DOT','WHITE','MEDIUM'
         self.lineStyle  = 'SOLID','THIN'
         # PARAMETERS
-        self.x, self.y = array(X), array(Y)
+        self.x = array([])
+        self.y = array([])
         # setup
         self.SetPointStyle()
         # done
+        return
+
+    def SetData(self, X, Y):
+        self.x = array(X)
+        self.y = array(Y)
         return
 
     def SetPointStyle(self, Styles = None):
@@ -491,3 +498,4 @@ class _plot():
         self.pen = wx.Pen(self.colour, WIDTHS[width], DASHINGS[dashing])
         # done
         return
+        

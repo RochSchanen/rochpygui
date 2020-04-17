@@ -14,7 +14,7 @@ from numpy import exp, log10, floor, ceil, linspace
 from theme import *
 
 ###############################################################################
-###################################  SCREEN ###################################
+################################### SCREEN ####################################
 ###############################################################################
 
 class Screen(wx.Control):
@@ -117,7 +117,7 @@ class Screen(wx.Control):
         pass
 
 ###############################################################################
-#################################### TOOL #####################################
+#################################### TOOLS ####################################
 ###############################################################################
 
 # generic class for creating tools
@@ -142,7 +142,7 @@ class ScreenTool():
         self.scr.Bind(wx.EVT_LEFT_DOWN,     self._LeftDown)
         self.scr.Bind(wx.EVT_MOTION,        self._Motion)
         self.scr.Bind(wx.EVT_LEFT_UP,       self._LeftUp)
-        self.scr.Bind(wx.EVT_LEAVE_WINDOW,  self._LeaveWindow)
+        self.scr.Bind(wx.EVT_LEAVE_WINDOW,  self._Leave)
         return
 
     # self deselect method
@@ -154,14 +154,14 @@ class ScreenTool():
         self.scr.Unbind(wx.EVT_LEAVE_WINDOW)
         return
 
-    def _LeaveWindow(self, event):
+    def _Leave(self, event):
         pass
 
 ###############################################################################
-#################################### DRAG BUFFER ##############################
+#################################### DRAG TOOL ################################
 ###############################################################################
 
-# tool used to drag the buffer under the clipScreen
+# basic drag tool
 class ScreenDragBuffer(ScreenTool):
 
     def Start(self):
@@ -194,7 +194,7 @@ class ScreenDragBuffer(ScreenTool):
         self._unlock(event)
         return
 
-    def _LeaveWindow(self, event):
+    def _Leave(self, event):
         self._unlock(event)
         return
 

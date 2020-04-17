@@ -13,15 +13,19 @@
 import wx
 
 # numpy: https://numpy.org/
-from numpy import exp
+from numpy import exp, inf
 
 # LOCAL
-from theme  import *
-from graph  import *
-from screen import *
+from theme    import *
+from display  import *
+from graph    import *
+from layout   import *
+from screen   import *
+from controls import *
+from buttons  import *
 
 ###############################################################################
-#################################### GraphicScreen ############################
+#################################### GRAPH SCREEN #############################
 ###############################################################################
 
 class GraphicScreen(Screen):
@@ -38,7 +42,8 @@ class GraphicScreen(Screen):
         # again some default format to prevent singularities
         self.OnPaintGraph.SetXFormat([2, 2])
         self.OnPaintGraph.SetYFormat([2, 2])
-        self.OnPaintGraph.StyleSet(DRAW_LABELS | DRAW_PLOTS)
+        self.OnPaintGraph.StyleSet(DRAW_PLOTS | DRAW_LABELS)
+        # self.OnPaintGraph.StyleSet(DRAW_LABEL_LEFT | DRAW_LABEL_BOTTOM)
         # setup screen
         W, H = self.GetSize()
         self.buffer   = wx.Bitmap(3*W, 3*H, wx.BITMAP_SCREEN_DEPTH)
@@ -54,9 +59,15 @@ class GraphicScreen(Screen):
         self.bufferGraph.StyleSet(SKIP_BORDERS)
         # set border
         self._setBorder()
-        # setup drag tool:
-        self.ToolSelect(_Drag(self))
         return
+
+    def AddPlot(self):
+        p = self.OnPaintGraph.AddPlot()
+        return p
+
+    def AddBufferedPlot(self):
+        p = self.bufferGraph.AddPlot()
+        return p
 
     def _setBorder(self):
         # get geometry
@@ -181,12 +192,379 @@ class GraphicScreen(Screen):
         self.OnPaintGraph.Draw(dc)
         return
 
-class _Drag(ScreenDragBuffer):
+###############################################################################
+################################ INTERACTIVE GRAPH ############################
+###############################################################################
 
+class InteractiveGraph(Control):
+
+    def Start(self):
+
+        # create plot
+        self.Graph = GraphicScreen(self, 600, 600)
+
+        # build tool bar:
+        ToolBar = Group(VERTICAL)
+
+        # drag
+        self.DragTool = _Drag(self.Graph)
+        lib, names = Theme.GetImages('Graph','Drag')
+        DRAG = Switch(self, lib, names)
+        DRAG.BindEvent(self.DragEvent)
+        ToolBar.Place(DRAG)
+
+        # expand
+        self.ExpandTool = _Expand(self.Graph)
+        lib, names = Theme.GetImages('Graph','Expand')
+        EXPAND = Switch(self, lib, names)
+        EXPAND.BindEvent(self.ExpandEvent)
+        ToolBar.Place(EXPAND)
+
+        # X expand
+        self.XExpandTool = _XExpand(self.Graph)
+        lib, names = Theme.GetImages('Graph','X Expand')
+        XEXPAND = Switch(self, lib, names)
+        XEXPAND.BindEvent(self.XExpandEvent)
+        ToolBar.Place(XEXPAND)
+
+        # Y expand
+        self.YExpandTool = _YExpand(self.Graph)
+        lib, names = Theme.GetImages('Graph','Y Expand')
+        YEXPAND = Switch(self, lib, names)
+        YEXPAND.BindEvent(self.YExpandEvent)
+        ToolBar.Place(YEXPAND)
+
+        # shrink
+        lib, names = Theme.GetImages('Graph','Shrink')
+        SHRINK = Push(self, lib, names)
+        SHRINK.BindEvent(self.ShrinkEvent)
+        ToolBar.Place(SHRINK)
+
+        # Yfit tool
+        lib, names = Theme.GetImages('Graph','Yfit')
+        YFIT = Switch(self, lib, names)
+        YFIT.BindEvent(self.YfitEvent)
+        ToolBar.Place(YFIT)
+
+        # Xfit tool
+        lib, names = Theme.GetImages('Graph','Xfit')
+        XFIT = Switch(self, lib, names)
+        XFIT.BindEvent(self.XfitEvent)
+        ToolBar.Place(XFIT)
+
+        # group into radio collection
+        RadioCollect([DRAG, EXPAND, XEXPAND, YEXPAND, SHRINK])
+
+        # setup content and set size
+        Content = Group(HORIZONTAL)
+        Content.Place(self.Graph)
+        Content.Place(ToolBar)
+        Content.DrawAllDecorations(self)
+        self.SetSize(Content.GetSize())
+        
+        # done
+        return
+
+    def DragEvent(self, event):
+        if event.status == 1: self.Graph.ToolSelect(self.DragTool)
+        if event.status == 0: self.DragTool.Deselect()
+        return
+
+    def ExpandEvent(self, event):
+        if event.status == 1: self.Graph.ToolSelect(self.ExpandTool)
+        if event.status == 0: self.ExpandTool.Deselect()
+        return
+
+    def XExpandEvent(self, event):
+        if event.status == 1: self.Graph.ToolSelect(self.XExpandTool)
+        if event.status == 0: self.XExpandTool.Deselect()
+        return
+
+    def YExpandEvent(self, event):
+        if event.status == 1: self.Graph.ToolSelect(self.YExpandTool)
+        if event.status == 0: self.YExpandTool.Deselect()
+        return
+
+    def ShrinkEvent(self, event):
+        X = 1.5 # coefficient
+        xs, xe, ys, ye = self.Graph.limit
+        sx, sy, cx, cy = X*(xe-xs), X*(ye-ys), 0.5*(xs+xe), 0.5*(ys+ye)
+        xs, xe, ys, ye = cx-sx/2, cx+sx/2, cy-sy/2, cy+sy/2
+        self.Graph.SetXLimit(xs, xe)
+        self.Graph.SetYLimit(ys, ye)
+        self.Graph.RefreshBuffer()
+        self.Graph.Refresh()
+        return
+
+    def YfitEvent(self, event):
+        if event.status:
+            # set start limits
+            Ys, Ye = inf, -inf
+            # for each data sets:
+            plots = self.Graph.bufferGraph.plots
+            for plot in plots:
+                # get data span
+                ys, ye = min(plot.y), max(plot.y)
+                # get overall extrema
+                Ys, Ye = min(Ys, ys), max(Ye, ye)
+            plots = self.Graph.OnPaintGraph.plots
+            for plot in plots:
+                # get data span
+                ys, ye = min(plot.y), max(plot.y)
+                # get overall extrema
+                Ys, Ye = min(Ys, ys), max(Ye, ye)
+            # leave thin border surounding data
+            X = 1.11 # (11 percent each side)
+            sy, cy = X*(Ye-Ys), 0.5*(Ys+Ye)
+            ys, ye = cy-sy/2, cy+sy/2
+            # update limits
+            self.Graph.SetYLimit(ys, ye)
+            self.Graph.RefreshBuffer()
+            self.Graph.Refresh()
+        return
+
+    def XfitEvent(self, event):
+        if event.status:
+            Xs, Xe = inf, -inf
+            plots = self.Graph.bufferGraph.plots
+            for plot in plots:
+                xs, xe = min(plot.x), max(plot.x)
+                Xs, Xe = min(Xs, xs), max(Xe, xe)
+            plots = self.Graph.OnPaintGraph.plots
+            for plot in plots:
+                xs, xe = min(plot.x), max(plot.x)
+                Xs, Xe = min(Xs, xs), max(Xe, xe)
+            X = 1.11
+            sx, cx = X*(Xe-Xs), 0.5*(Xs+Xe)
+            xs, xe = cx-sx/2, cx+sx/2
+            self.Graph.SetXLimit(xs, xe)
+            self.Graph.RefreshBuffer()
+            self.Graph.Refresh()
+        return
+
+###############################################################################
+###############################################################################
+
+class _Drag(ScreenDragBuffer):
     # superseed the previous _unlock() method to provide
     # a RefreshBuffer() at the end of the drag event
     def _unlock(self, event):
         if self.lock:
             self.scr.RefreshBuffer()            
             self.lock = False
+        return
+
+###############################################################################
+###############################################################################
+
+class _Expand(ScreenTool):
+
+    def Start(self):
+        self.lock = False
+        self.pen = wx.Pen(wx.Colour(150, 150, 150), style = wx.PENSTYLE_SOLID)
+        self.brush = wx.Brush(wx.Colour(150,150,150, 64))
+        return
+
+    def onPaint(self, dc):
+        if self.lock:
+            X, Y = self.start                       # starting point
+            x, y = self.stop                        # current point
+            x1, x2 = min(X, x), max(X, x)           # order values
+            y1, y2 = min(Y, y), max(Y, y)           # order values
+            # use a graphic context on the device context
+            gc = wx.GraphicsContext.Create(dc)
+            gc.SetPen(self.pen)
+            gc.SetBrush(self.brush)
+            # create path, draw and close path
+            path = gc.CreatePath()
+            path.AddRectangle(x1, y1, x2-x1, y2-y1)
+            path.CloseSubpath()
+            gc.DrawPath(path)
+
+        return
+
+    def _LeftDown(self, event):
+        self.lock  = True
+        self.start = event.GetPosition()
+        self.stop  = self.start
+        return
+
+    def _Motion(self, event):
+        if self.lock:
+            self.stop = event.GetPosition()
+            self.scr.Refresh()
+        return
+
+    def _LeftUp(self, event):
+        if self.lock:
+            self.stop = event.GetPosition()
+            X, Y = self.start
+            x, y = self.stop
+            x1, x2 = min(X, x), max(X, x)
+            y1, y2 = min(Y, y), max(Y, y)
+            # convert selected pixels into data coordinates
+            xs, ys = self.scr.OnPaintGraph._getCoords(x1, y2)
+            xe, ye = self.scr.OnPaintGraph._getCoords(x2, y1)
+            # minimum 10x10 pixels
+            if (x2-x1) > 10 and (y2-y1) > 10:
+                # update data scale
+                self.scr.SetXLimit(xs, xe)
+                self.scr.SetYLimit(ys, ye)
+            self.lock = False
+            self.scr.RefreshBuffer()
+            self.scr.Refresh()
+        # done   
+        return
+
+    # cancel operation
+    def _Leave(self, event):
+        if self.lock:
+            self.lock = False
+            self.scr.Refresh()        
+        return
+
+###############################################################################
+###############################################################################
+
+class _XExpand(ScreenTool):
+
+    def Start(self):
+        self.lock = False
+        self.pen = wx.Pen(wx.Colour(150, 150, 150), style = wx.PENSTYLE_SOLID)
+        self.brush = wx.Brush(wx.Colour(150,150,150, 64))
+        return
+
+    def onPaint(self, dc):
+        if self.lock:
+            l, r, t, b = self.scr.OnPaintGraph.border
+            W, H = self.scr.GetSize()
+            X, Y = self.start                       # starting point
+            x, y = self.stop                        # current point
+            x1, x2 = min(X, x), max(X, x)           # order values
+            y1, y2 = min(Y, y), max(Y, y)           # order values
+            # use a graphic context on the device context
+            gc = wx.GraphicsContext.Create(dc)
+            gc.SetPen(wx.TRANSPARENT_PEN)
+            gc.SetBrush(self.brush)
+            # create path, draw and close path
+            path = gc.CreatePath()
+            path.AddRectangle(x1, t, x2-x1, H-t-b)
+            path.CloseSubpath()
+            gc.DrawPath(path)
+            # draw lines
+            dc.SetPen(self.pen)
+            dc.DrawLine(x1, t, x1, H-b)
+            dc.DrawLine(x2, t, x2, H-b)
+        return
+
+    def _LeftDown(self, event):
+        self.lock  = True
+        self.start = event.GetPosition()
+        self.stop  = self.start
+        return
+
+    def _Motion(self, event):
+        if self.lock:
+            self.stop = event.GetPosition()
+            self.scr.Refresh()
+        return
+
+    def _LeftUp(self, event):
+        if self.lock:
+            self.stop = event.GetPosition()
+            X, Y = self.start
+            x, y = self.stop
+            x1, x2 = min(X, x), max(X, x)
+            y1, y2 = min(Y, y), max(Y, y)
+            # convert selected pixels into data coordinates
+            xs, ys = self.scr.OnPaintGraph._getCoords(x1, y2)
+            xe, ye = self.scr.OnPaintGraph._getCoords(x2, y1)
+            # minimum 10x10 pixels
+            if (x2-x1) > 10:
+                # update data scale
+                self.scr.SetXLimit(xs, xe)
+            self.lock = False
+            self.scr.RefreshBuffer()
+            self.scr.Refresh()
+        # done   
+        return
+
+    # cancel operation
+    def _Leave(self, event):
+        if self.lock:
+            self.lock = False
+            self.scr.Refresh()        
+        return
+
+###############################################################################
+###############################################################################
+
+class _YExpand(ScreenTool):
+
+    def Start(self):
+        self.lock = False
+        self.pen = wx.Pen(wx.Colour(150, 150, 150), style = wx.PENSTYLE_SOLID)
+        self.brush = wx.Brush(wx.Colour(150,150,150, 64))
+        return
+
+    def onPaint(self, dc):
+        if self.lock:
+            l, r, t, b = self.scr.OnPaintGraph.border
+            W, H = self.scr.GetSize()
+            X, Y = self.start                       # starting point
+            x, y = self.stop                        # current point
+            x1, x2 = min(X, x), max(X, x)           # order values
+            y1, y2 = min(Y, y), max(Y, y)           # order values
+            # use a graphic context on the device context
+            gc = wx.GraphicsContext.Create(dc)
+            gc.SetPen(wx.TRANSPARENT_PEN)
+            gc.SetBrush(self.brush)
+            # create path, draw and close path
+            path = gc.CreatePath()
+            path.AddRectangle(l, y1, W-l-r, y2-y1)
+            path.CloseSubpath()
+            gc.DrawPath(path)
+            # draw lines
+            dc.SetPen(self.pen)
+            dc.DrawLine(l, y1, W-r, y1)
+            dc.DrawLine(l, y2, W-r, y2)
+        return
+
+    def _LeftDown(self, event):
+        self.lock  = True
+        self.start = event.GetPosition()
+        self.stop  = self.start
+        return
+
+    def _Motion(self, event):
+        if self.lock:
+            self.stop = event.GetPosition()
+            self.scr.Refresh()
+        return
+
+    def _LeftUp(self, event):
+        if self.lock:
+            self.stop = event.GetPosition()
+            X, Y = self.start
+            x, y = self.stop
+            x1, x2 = min(X, x), max(X, x)
+            y1, y2 = min(Y, y), max(Y, y)
+            # convert selected pixels into data coordinates
+            xs, ys = self.scr.OnPaintGraph._getCoords(x1, y2)
+            xe, ye = self.scr.OnPaintGraph._getCoords(x2, y1)
+            # minimum 10x10 pixels
+            if (y2-y1) > 10:
+                # update data scale
+                self.scr.SetYLimit(ys, ye)
+            self.lock = False
+            self.scr.RefreshBuffer()
+            self.scr.Refresh()
+        # done   
+        return
+
+    # cancel operation
+    def _Leave(self, event):
+        if self.lock:
+            self.lock = False
+            self.scr.Refresh()        
         return

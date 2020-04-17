@@ -26,6 +26,22 @@ _ImageLibraries = {
         "Outset"    : [(2, 1)],
     },
 
+    # used by: "plot.py"
+    "Graph":{
+        "path"      :"606060_GRAPH.png",
+        "Grid"      : (4, 4),
+        "Size"      : (62, 62),
+        "Offset"    : (0, 0),
+        # sets:
+        "Drag"      : [(1, 1), (1, 2), (1, 1), (1, 2)],
+        "Expand"    : [(2, 1), (2, 2), (2, 1), (2, 2)],
+        "Shrink"    : [(3, 3), (3, 4), (3, 3), (3, 4)],
+        "Yfit"      : [(1, 3), (1, 4), (1, 3), (1, 4)],
+        "Xfit"      : [(2, 3), (2, 4), (2, 3), (2, 4)],
+        "X Expand"  : [(3, 1), (3, 2), (3, 1), (3, 2)],
+        "Y Expand"  : [(4, 1), (4, 2), (4, 1), (4, 2)]
+    },
+
     # used by: "display.py", "buttons.py"
     "LED":{
         "path"      :"606060_LED.png",
@@ -158,7 +174,7 @@ class _lib():
 
 _fontLibrary = {
     "Helvetica":{
-        "size"      : 10,
+        "size"      : 8,
         "familly"   : wx.FONTFAMILY_ROMAN,
         "style"     : wx.FONTSTYLE_NORMAL,
         "weight"    : wx.FONTWEIGHT_NORMAL,
