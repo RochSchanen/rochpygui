@@ -13,7 +13,7 @@
 import wx
 
 # numpy: https://numpy.org/
-from numpy import exp, inf
+from numpy import exp, inf, where
 
 # LOCAL
 from theme    import *
@@ -206,6 +206,13 @@ class InteractiveGraph(Control):
         # build tool bar:
         ToolBar = Group(VERTICAL)
 
+        # measure
+        self.MeasureTool = _Measure(self.Graph)
+        lib, names = Theme.GetImages('Graph','Measure')
+        MEASURE = Switch(self, lib, names)
+        MEASURE.BindEvent(self.MeasureEvent)
+        ToolBar.Place(MEASURE)
+
         # drag
         self.DragTool = _Drag(self.Graph)
         lib, names = Theme.GetImages('Graph','Drag')
@@ -253,7 +260,7 @@ class InteractiveGraph(Control):
         ToolBar.Place(XFIT)
 
         # group into radio collection
-        RadioCollect([DRAG, EXPAND, XEXPAND, YEXPAND, SHRINK])
+        RadioCollect([MEASURE, DRAG, EXPAND, XEXPAND, YEXPAND, SHRINK])
 
         # setup content and set size
         Content = Group(HORIZONTAL)
@@ -263,6 +270,11 @@ class InteractiveGraph(Control):
         self.SetSize(Content.GetSize())
         
         # done
+        return
+
+    def MeasureEvent(self, event):
+        if event.status == 1: self.Graph.ToolSelect(self.MeasureTool)
+        if event.status == 0: self.MeasureTool.Deselect()
         return
 
     def DragEvent(self, event):
@@ -298,21 +310,31 @@ class InteractiveGraph(Control):
 
     def YfitEvent(self, event):
         if event.status:
+            # get geometry
+            xs, xe, ys, ye = self.Graph.limit
             # set start limits
             Ys, Ye = inf, -inf
             # for each data sets:
             plots = self.Graph.bufferGraph.plots
             for plot in plots:
-                # get data span
-                ys, ye = min(plot.y), max(plot.y)
-                # get overall extrema
-                Ys, Ye = min(Ys, ys), max(Ye, ye)
+                # restrict data set
+                I = (plot.x >= xs) & (plot.x <= xe)
+                y = plot.y[where(I)]
+                if len(y):
+                    # get data span
+                    ys, ye = min(y), max(y)
+                    # get overall extrema
+                    Ys, Ye = min(Ys, ys), max(Ye, ye)
             plots = self.Graph.OnPaintGraph.plots
             for plot in plots:
-                # get data span
-                ys, ye = min(plot.y), max(plot.y)
-                # get overall extrema
-                Ys, Ye = min(Ys, ys), max(Ye, ye)
+                # restrict data set
+                I = (plot.x >= xs) & (plot.x <= xe)
+                y = plot.y[where(I)]
+                if len(y):
+                    # get data span
+                    ys, ye = min(y), max(y)
+                    # get overall extrema
+                    Ys, Ye = min(Ys, ys), max(Ye, ye)
             # leave thin border surounding data
             X = 1.11 # (11 percent each side)
             sy, cy = X*(Ye-Ys), 0.5*(Ys+Ye)
@@ -325,15 +347,22 @@ class InteractiveGraph(Control):
 
     def XfitEvent(self, event):
         if event.status:
+            xs, xe, ys, ye = self.Graph.limit
             Xs, Xe = inf, -inf
             plots = self.Graph.bufferGraph.plots
             for plot in plots:
-                xs, xe = min(plot.x), max(plot.x)
-                Xs, Xe = min(Xs, xs), max(Xe, xe)
+                I = (plot.y >= ys) & (plot.y <= ye)
+                x = plot.x[where(I)]
+                if len(x):
+                    xs, xe = min(x), max(x)
+                    Xs, Xe = min(Xs, xs), max(Xe, xe)
             plots = self.Graph.OnPaintGraph.plots
             for plot in plots:
-                xs, xe = min(plot.x), max(plot.x)
-                Xs, Xe = min(Xs, xs), max(Xe, xe)
+                I = (plot.y >= ys) & (plot.y <= ye)
+                x = plot.x[where(I)]
+                if len(x):
+                    xs, xe = min(x), max(x)
+                    Xs, Xe = min(Xs, xs), max(Xe, xe)
             X = 1.11
             sx, cx = X*(Xe-Xs), 0.5*(Xs+Xe)
             xs, xe = cx-sx/2, cx+sx/2
@@ -567,4 +596,147 @@ class _YExpand(ScreenTool):
         if self.lock:
             self.lock = False
             self.scr.Refresh()        
+        return
+
+###############################################################################
+###############################################################################
+
+class _Measure(ScreenTool):
+
+    def Start(self):
+        # LOCAL
+        self.lock = False
+        self.P0 = None
+        self.P1 = None
+        # style
+        self.colour = wx.Colour(155,155,100) # adjust color
+        self.pen = wx.Pen(self.colour, 1, wx.PENSTYLE_DOT_DASH)
+        self.brush = wx.Brush(wx.Colour(0,0,0), wx.BRUSHSTYLE_SOLID)
+        return
+
+    def onPaint(self, dc):
+        
+        # get refernce to graph
+        Graph = self.scr.OnPaintGraph
+
+        # get geometry
+        l, r, t, b = Graph.border
+        W, H = Graph.size
+
+        # draw P0
+        if self.P0:
+            x0, y0 = self.P0
+            dc.SetPen(self.pen)
+            dc.DrawLine(x0, t, x0, H-b)            
+            dc.DrawLine(l, y0, W-r, y0)
+
+        # draw P1
+        if self.P1:
+            x1, y1 = self.P1
+            dc.SetPen(self.pen)
+            dc.DrawLine(x1, t, x1, H-b)            
+            dc.DrawLine(l, y1, W-r, y1)                
+
+        # get style
+        n, d = Graph.xFormat; fx = f'%.{d+1}f'
+        n, d = Graph.yFormat; fy = f'%.{d+1}f'
+
+        # set style
+        dc.SetBrush(self.brush)
+        dc.SetFont(Graph.font)
+        dc.SetTextForeground(self.colour)
+        dc.SetPen(wx.TRANSPARENT_PEN)
+        wX, wY = 0, 0
+
+        # write P0
+        if self.P0:
+            x0, y0 = self.P0
+            X0, Y0 = self.scr.OnPaintGraph._getCoords(x0, y0)
+            X, Y = l, t
+            T = "X0 = " + fx % X0
+            wX, h = dc.GetTextExtent(T)
+            dc.DrawRectangle(X, Y, wX, h)
+            dc.DrawText(T, X, Y)
+            X, Y = X, Y+h
+            T = "Y0 = " + fx % Y0
+            wY, h = dc.GetTextExtent(T)
+            dc.DrawRectangle(X, Y, wY, h)
+            dc.DrawText(T, X, Y)
+
+        # draw P1
+        if self.P1:
+            x1, y1 = self.P1
+            X1, Y1 = self.scr.OnPaintGraph._getCoords(x1, y1)
+            X, Y = X + max(wX, wY)+5, t
+            T = "X1 = " + fx % X1
+            wX, h = dc.GetTextExtent(T)
+            dc.DrawRectangle(X, Y, wX, h)
+            dc.DrawText(T, X, Y)
+            X, Y = X, Y+h
+            T = "Y1 = " + fx % Y1
+            wY, h = dc.GetTextExtent(T)
+            dc.DrawRectangle(X, Y, wY, h)
+            dc.DrawText(T, X, Y)
+
+        # write delta
+        if self.lock:
+            X, Y = X + max(wX, wY)+5, t
+            T = "dX = " + fx % (X1-X0)
+            wX, h = dc.GetTextExtent(T)
+            dc.DrawRectangle(X, Y, wX, h)
+            dc.DrawText(T, X, Y)
+            X, Y = X, Y+h
+            T = "dY = " + fx % (Y1-Y0)
+            wY, h = dc.GetTextExtent(T)
+            dc.DrawRectangle(X, Y, wY, h)
+            dc.DrawText(T, X, Y)
+
+        # done
+        return
+
+        # text = fx.format(X1)     
+        # dc.DrawText("X1 = {}".format(text), w+1/12*W, 0)
+
+    def _getPosition(self, event):
+        # get geometry
+        l, r, t, b = self.scr.OnPaintGraph.border
+        W, H = self.scr.GetSize()
+        # get event parameters
+        position = event.GetPosition()
+        # filter values
+        X, Y = position
+        if X<l or X>W-r-1: position = None
+        if Y<t or Y>H-b-1: position = None
+        # done
+        return position
+
+    def _LeftDown(self, event):
+        self.lock  = True
+        self.P0 = self._getPosition(event) 
+        self.P1 = self.P0
+        return
+
+    def _Motion(self, event):
+        # get position
+        P = self._getPosition(event)
+        # update measured value
+        if self.lock: self.P0, self.P1 = self.P0, P
+        else:         self.P0, self.P1 = P, None
+        self.scr.Refresh()
+        return
+
+    def _LeftUp(self, event):
+        self._unlock(event)
+        return
+
+    def _Leave(self, event):
+        self._unlock(event)
+        return
+
+    def _unlock(self, event):
+        if self.lock:
+            self.lock  = False
+            self.P0 = self._getPosition(event)
+            self.P1 = None
+            self.scr.Refresh()
         return

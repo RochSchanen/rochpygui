@@ -25,11 +25,11 @@ class myApp(App):
         Center     =  123.163
         Height     =  0.780
         lv, rv     = -2.5*Full_Width, +2.5*Full_Width
-        npts       =  31.0
+        npts       =  67.0
 
         # make lines
         t = linspace(Center+lv, Center+rv, npts)
-        s = (t-Center)/Full_Width 
+        s = (t-Center)/Full_Width*2
         x = Height/(1+s**2);
         y = Height*s/(1+s**2)
 

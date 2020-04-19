@@ -39,7 +39,8 @@ _ImageLibraries = {
         "Yfit"      : [(1, 3), (1, 4), (1, 3), (1, 4)],
         "Xfit"      : [(2, 3), (2, 4), (2, 3), (2, 4)],
         "X Expand"  : [(3, 1), (3, 2), (3, 1), (3, 2)],
-        "Y Expand"  : [(4, 1), (4, 2), (4, 1), (4, 2)]
+        "Y Expand"  : [(4, 1), (4, 2), (4, 1), (4, 2)],
+        "Measure"   : [(4, 3), (4, 4), (4, 3), (4, 4)]
     },
 
     # used by: "display.py", "buttons.py"
@@ -174,7 +175,7 @@ class _lib():
 
 _fontLibrary = {
     "Helvetica":{
-        "size"      : 8,
+        "size"      : 12,
         "familly"   : wx.FONTFAMILY_ROMAN,
         "style"     : wx.FONTSTYLE_NORMAL,
         "weight"    : wx.FONTWEIGHT_NORMAL,
