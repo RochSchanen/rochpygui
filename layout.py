@@ -106,7 +106,9 @@ class Group:
                         m=0
                         if p>1: m=1; p -= 2
                         # set new borders
-                        self.borders[i] = l+q+m, r+q+m, t, b
+                        if isinstance(self.items[i], Group):
+                            self.items[i].w += 2*(q+m)
+                        else: self.borders[i] = l+q+m, r+q+m, t, b
 
             # expand vertically
             if direction & VERTICAL:
@@ -114,28 +116,31 @@ class Group:
                 m = max(H, h)
                 # modify borders
                 for i in range(len(self.items)):
-                    name = self.decorations[i]
-                    align = self.alignments[i]
-                    # get current geometry
-                    iw, ih = self.items[i].GetSize()
-                    l, r, t, b = self.borders[i]
-                    L, R, T, B = 0, 0, 0, 0
-                    if name: L, R, T, B = \
-                        Decorations.GetGeometry(name)
-                    # compute current height
-                    s = ih + t+b + T+B
-                    # modify accordingly
-                    if align == TOP:    t, b = t, b+m-s
-                    if align == BOTTOM: t, b = t+m-s, b
-                    if align == CENTER:
-                        # split at the center
-                        q = (m-s)/2
-                        # correct for the remainder
-                        p = (m-s)-2*q
-                        # new borders
-                        t, b = t+q, b+q+p
-                    # set new borders
-                    self.borders[i] = l, r, t, b 
+                    if isinstance(self.items[i], Group):
+                        self.items[i].h = m
+                    else: # adjust borders
+                        name = self.decorations[i]
+                        align = self.alignments[i]
+                        # get current geometry
+                        iw, ih = self.items[i].GetSize()
+                        l, r, t, b = self.borders[i]
+                        L, R, T, B = 0, 0, 0, 0
+                        if name: L, R, T, B = \
+                            Decorations.GetGeometry(name)
+                        # compute current height
+                        s = ih + t+b + T+B
+                        # modify accordingly
+                        if align == TOP:    t, b = t, b+m-s
+                        if align == BOTTOM: t, b = t+m-s, b
+                        if align == CENTER:
+                            # split at the center
+                            q = (m-s)/2
+                            # correct for the remainder
+                            p = (m-s)-2*q
+                            # new borders
+                            t, b = t+q, b+q+p
+                        # set new borders
+                        self.borders[i] = l, r, t, b 
 
         # this group direction is HORIZONTAL
         if self.direction == VERTICAL:
@@ -156,7 +161,9 @@ class Group:
                         m=0 
                         if p>1: m=1; p -= 2
                         # set new borders
-                        self.borders[i] = l, r, t+q+m, b+q+m
+                        if isinstance(self.items[i], Group):
+                            self.items[i].h += 2*(q+m)
+                        else: self.borders[i] = l, r, t+q+m, b+q+m
 
             # expand horizontally
             if direction & HORIZONTAL:
@@ -164,28 +171,31 @@ class Group:
                 m = max(W, w)
                 # modify borders
                 for i in range(len(self.items)):
-                    name = self.decorations[i]
-                    align = self.alignments[i]
-                    # get current geometry
-                    iw, ih = self.items[i].GetSize()
-                    l, r, t, b = self.borders[i]
-                    L, R, T, B = 0, 0, 0, 0
-                    if name: L, R, T, B = \
-                        Decorations.GetGeometry(name)
-                    # compute current width
-                    s = iw + l+r + L+R
-                    # modify accordingly
-                    if align == LEFT:   l, r = l, r+m-s
-                    if align == RIGHT:  l, r = l+m-s, r
-                    if align == CENTER:
-                        # split at the center
-                        q = (m-s)/2
-                        # correct for the remainder
-                        p = (m-s)-2*q
-                        # new borders
-                        l, r = l+q, r+q+p
-                    # set new borders
-                    self.borders[i] = l, r, t, b 
+                    if isinstance(self.items[i], Group):
+                        self.items[i].w = m
+                    else: # adjust borders
+                        name = self.decorations[i]
+                        align = self.alignments[i]
+                        # get current geometry
+                        iw, ih = self.items[i].GetSize()
+                        l, r, t, b = self.borders[i]
+                        L, R, T, B = 0, 0, 0, 0
+                        if name: L, R, T, B = \
+                            Decorations.GetGeometry(name)
+                        # compute current width
+                        s = iw + l+r + L+R
+                        # modify accordingly
+                        if align == LEFT:   l, r = l, r+m-s
+                        if align == RIGHT:  l, r = l+m-s, r
+                        if align == CENTER:
+                            # split at the center
+                            q = (m-s)/2
+                            # correct for the remainder
+                            p = (m-s)-2*q
+                            # new borders
+                            l, r = l+q, r+q+p
+                        # set new borders
+                        self.borders[i] = l, r, t, b 
 
         self._UpdateGeometry()
         return

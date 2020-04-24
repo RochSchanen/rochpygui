@@ -8,14 +8,31 @@ base:
 
 Themes:
 
-- Create a theme system: theme images and backgrounds that can be easely updated/modified. 06 April 2020, partially done. How ot switch between themes?
+- Create a theme system: theme images and backgrounds that can be
+easily updated or modified. DONE partially (06 April 2020).
+- How to switch between themes?
 - try to use the benefit of png transparency.
 - try to make use of the SVG language for the graphics ?
 
 layout:
 
 - Make a library of tools that select, group and align in a similar way that illustrator does. This would allow for a very versatile system while remaining pretty much user friendly. There would be some logic in the process of organising the graphics layout.
-- add decoration image in the theme module?
+
+- add decoration image in the theme module? DONE
+
+timer:
+
+- try generate timer signals shifted from each other
+- add timing to a confif file
+
+gpib:
+
+- how to resolve conflicting command from separated threads
+- SR830 QUERRIES ARE SLOW: Try to fix the situation.
+
+scripting:
+
+- how to externally script and controled python programs using a TCP/IP interface.
 
 display:
 

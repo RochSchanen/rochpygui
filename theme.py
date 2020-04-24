@@ -44,7 +44,7 @@ _ImageLibraries = {
     },
 
     # used by: "display.py", "buttons.py"
-    "LED":{
+    "Round LED":{
         "path"      :"606060_LED.png",
         "Grid"      : (8, 2),
         "Size"      : (20, 20),

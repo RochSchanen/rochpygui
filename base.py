@@ -102,3 +102,6 @@ class App(wx.App):
             if key == wx.WXK_ESCAPE: wx.Exit()
         else: event.Skip() # forward event
         return
+
+    # def __del__(self):
+    #     return
