@@ -11,7 +11,7 @@ from base import *
 class myApp(App):
 
 	def Start(self):
-		# start up code here
+		# code here
 		return
 
 myApp().MainLoop()

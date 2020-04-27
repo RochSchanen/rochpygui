@@ -44,6 +44,39 @@ _ImageLibraries = {
     },
 
     # used by: "display.py", "buttons.py"
+    "Hex Digit":{
+        "path"      :"606060_DIGIT.png",
+        "Grid"      : (8, 4),
+        "Size"      : (10, 20),
+        "Offset"    : (0, 0),
+        # sets:
+        "Normal"    : [(1, 3), (2, 3), (3, 3), (4, 3), (5, 3),
+                       (1, 4), (2, 4), (3, 4), (4, 4), (5, 4)],
+        "Hoover"    : [(1, 1), (2, 1), (3, 1), (4, 1), (5, 1),
+                       (1, 2), (2, 2), (3, 2), (4, 2), (5, 2)]
+    },
+
+    # used by: "display.py", "buttons.py"
+    "Hex Sign":{
+        "path"      :"606060_DIGIT.png",
+        "Grid"      : (8, 4),
+        "Size"      : (11, 20),
+        "Offset"    : (0, 0),
+        # sets:
+        "White"     : [(7, 1), (8, 1)]
+    },
+
+    # used by: "display.py", "buttons.py"
+    "Hex Dot":{
+        "path"      :"606060_DIGIT.png",
+        "Grid"      : (8, 4),
+        "Size"      : (5, 20),
+        "Offset"    : (0, 0),
+        # sets:
+        "White"       : [(6, 1)]
+    },
+
+    # used by: "display.py", "buttons.py"
     "Round LED":{
         "path"      :"606060_LED.png",
         "Grid"      : (8, 2),
@@ -70,7 +103,7 @@ _ImageLibraries = {
         "Right"     : [(7, 2), (8, 2)],
     },
 
-    "LEDSwitch":{
+    "LED Switch":{
         "path"      :"606060_SWITCH.png",
         "Grid"      : (8, 3),
         "Size"      : (28, 52),
@@ -83,7 +116,7 @@ _ImageLibraries = {
         "Yellow"    : [(5, 3), (6, 3), (7, 3), (8, 3)]
     },
 
-    "LEDRadio":{    # same as LEDSwitch but with only two states.
+    "LED Radio":{    # same as LEDSwitch but with only two states.
         "path"      :"606060_SWITCH.png",
         "Grid"      : (8, 3),
         "Size"      : (28, 52),

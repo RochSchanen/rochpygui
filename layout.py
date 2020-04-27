@@ -43,8 +43,8 @@ class Group:
         
         # This group contents
         self.items       = []   # list of items in this group
-        self.alignments  = []   # items' alignment
-        self.decorations = []   # items' decoration
+        self.alignments  = []   # items' align
+        self.decorations = []   # items' deco
         self.borders     = []   # items' border
         
         # done
@@ -53,23 +53,23 @@ class Group:
     # Add an item to this group
     # Items order follows the order in which they have added.
     # Options are:
-    # - alignment
-    # - decoration
+    # - align
+    # - deco
     # - border
     # Example: some_group.Place(some_item, CENTER, 'Groove', (10,10,5,5))
     # Decorations such as "groove" are found in ".\resources\decorations\"
     def Place(
-            self,
-            item,                       # item object
-            alignment  = CENTER,        # alignment
-            decoration = None,          # decoration
-            border     = (0, 0, 0, 0)   # borders (left, right, top, bottom)
+            self,                   # this group
+            item,                   # item to place
+            align  = CENTER,        # align
+            deco   = None,          # deco
+            border = (0, 0, 0, 0)   # borders (left, right, top, bottom)
             ):
 
         # add the new item to the group
         self.items.append(item)
-        self.alignments.append(alignment)
-        self.decorations.append(decoration)
+        self.alignments.append(align)
+        self.decorations.append(deco)
         self.borders.append(border)
 
         # If item is a group, register its parenthood
@@ -219,7 +219,7 @@ class Group:
 
         # reset all children positions
         x, y = 0, 0
-        for item, alignment, decoration, border in zip(
+        for item, align, deco, border in zip(
             self.items, self.alignments, self.decorations, self.borders):
             # get geometry (width, height)
             w, h = item.GetSize()
@@ -227,14 +227,14 @@ class Group:
             l, r, t, b = border 
             # get decors geometry
             L, R, T, B = 0, 0, 0, 0
-            if decoration: L, R, T, B = \
-                Decorations.GetGeometry(decoration)
+            if deco: L, R, T, B = \
+                Decorations.GetGeometry(deco)
 
             if self.direction == VERTICAL:
                 # get horizontal offset
-                if alignment == LEFT:   x = l+L
-                if alignment == CENTER: x = W/2-w/2
-                if alignment == RIGHT:  x = W-w-r-R
+                if align == LEFT:   x = l+L
+                if align == CENTER: x = W/2-w/2
+                if align == RIGHT:  x = W-w-r-R
                 # set position
                 item.SetPosition((self.x + x, self.y + y + t+T))
                 # shift vertical position for next item
@@ -242,9 +242,9 @@ class Group:
 
             if self.direction == HORIZONTAL:
                 # get vertical offset
-                if alignment == TOP:    y = t+T
-                if alignment == CENTER: y = H/2-h/2
-                if alignment == BOTTOM: y = H-h-b-B
+                if align == TOP:    y = t+T
+                if align == CENTER: y = H/2-h/2
+                if align == BOTTOM: y = H-h-b-B
                 # set position
                 item.SetPosition((self.x + x + l+L, self.y + y))
                 # shift horizontal position for next item
@@ -258,7 +258,7 @@ class Group:
     def _GetMinSize(self):
         # current position start at 0, 0
         W, H = 0, 0
-        for item, decoration, border in zip(
+        for item, deco, border in zip(
             self.items, self.decorations, self.borders):
             # get geometry (width, height)
             w, h = item.GetSize()
@@ -266,8 +266,8 @@ class Group:
             l, r, t, b = border 
             # get decors geometry
             L, R, T, B = 0, 0, 0, 0
-            if decoration: L, R, T, B = \
-                Decorations.GetGeometry(decoration)
+            if deco: L, R, T, B = \
+                Decorations.GetGeometry(deco)
             # build size
             if self.direction == VERTICAL:
                 W = max(W, w + L+R + l+r)
@@ -276,8 +276,8 @@ class Group:
                 W += w + L+R + l+r
                 H = max(H, h + T+B + t+b)
             # coerce
-            if decoration:
-                # minimum 10x10 pixels inside a decoration
+            if deco:
+                # minimum 10x10 pixels inside a deco
                 if W < (L+R+10): W = (L+R+10)
                 if H < (T+B+10): H = (T+B+10)
         #done
@@ -292,7 +292,7 @@ class Group:
         return (W, H)
 
     # Called once from top group
-    # (no decoration around the top group)
+    # (no deco around the top group)
     def DrawAllDecorations(self, Ctrl):
         # get the group geometry
         w, h = self.GetSize()
@@ -317,19 +317,19 @@ class Group:
         if self.items: 
             for item, name, border in zip(
                 self.items, self.decorations, self.borders):
-                # check decoration
+                # check deco
                 if name:
                     # Get geometry
                     w, h = item.GetSize()
                     x, y = item.GetPosition()
                     l, r, t, b = border
                     L, R, T, B = Decorations.GetGeometry(name)
-                    # get decoration bitmap
+                    # get deco bitmap
                     Bitmap = Decorations.GetBitmap(
                         name, w+l+r+L+R, h+t+b+T+B)
-                    # draw decoration
+                    # draw deco
                     dc.DrawBitmap(Bitmap, x-l-L, y-t-T)
-                # draw children decoration
+                # draw children deco
                 if isinstance(item, Group):
                     item._DrawDecorations(dc)
         return
@@ -372,7 +372,7 @@ class _decorationsLibrary():
                 dc.SetBrush(wx.Brush(BackgroundColour, wx.BRUSHSTYLE_SOLID))
                 dc.SetPen(wx.TRANSPARENT_PEN)
                 dc.DrawRectangle(0, 0, 32, 32)
-                # draw decoration (grey line countour)
+                # draw deco (grey line countour)
                 dc.SetPen(wx.GREY_PEN)
                 dc.DrawRectangle(1, 1, 32-2*1, 32-2*1)
                 # release dc

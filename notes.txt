@@ -10,9 +10,11 @@ Themes:
 
 - Create a theme system: theme images and backgrounds that can be
 easily updated or modified. DONE partially (06 April 2020).
+- absolutely the image library must be declared in some config files...
 - How to switch between themes?
 - try to use the benefit of png transparency.
 - try to make use of the SVG language for the graphics ?
+- it would be nice to split the geometry from the colors... (a lot more complicated)
 
 layout:
 
@@ -44,7 +46,7 @@ buttons:
 
 controls:
 
-- ...
+- change self.evt to evt: only used once to bind event object
 
 Config:
 

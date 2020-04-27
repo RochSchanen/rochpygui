@@ -61,7 +61,7 @@ class _baseFrm(wx.Frame):
         return
 
 # allow ESCAPE sequence when developping projects
-ESCAPE = True
+_ESCAPE = False
 
 # modified App class
 class App(wx.App):
@@ -98,7 +98,7 @@ class App(wx.App):
     # Exit on Esc: Debugging/Development stage
     def _OnKeyDown(self, event):
         key = event.GetKeyCode()
-        if ESCAPE:
+        if _ESCAPE:
             if key == wx.WXK_ESCAPE: wx.Exit()
         else: event.Skip() # forward event
         return
