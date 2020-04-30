@@ -4,6 +4,8 @@
 # created; 2020 April 05
 # repository; https://github.com/RochSchanen/rochpygui
 
+# todo: we should definitely define images geometries in configuration files
+
 # wxpython: https://www.wxpython.org/
 import wx
 
@@ -41,6 +43,50 @@ _ImageLibraries = {
         "X Expand"  : [(3, 1), (3, 2), (3, 1), (3, 2)],
         "Y Expand"  : [(4, 1), (4, 2), (4, 1), (4, 2)],
         "Measure"   : [(4, 3), (4, 4), (4, 3), (4, 4)]
+    },
+
+    # SR830
+    "SR830 Digit":{
+        "path"      :"606060_SR830.png",
+        "Grid"      : (16, 4),
+        "Size"      : (10, 24),
+        "Offset"    : (0, 0),
+        "Red"       : [(1, 1), (2, 1), (3, 1), (4, 1), (5, 1),
+                       (6, 1), (7, 1), (8, 1), (9, 1), (10, 1), (14, 1)],
+    },
+    "SR830 Sign":{
+        "path"      :"606060_SR830.png",
+        "Grid"      : (16, 4),
+        "Size"      : (12, 24),
+        "Offset"    : (0, 0),
+        "Red"       : [(11, 1), (12, 1)]
+    },
+    "SR830 Dot":{
+        "path"      :"606060_SR830.png",
+        "Grid"      : (16, 4),
+        "Size"      : (3, 24),
+        "Offset"    : (0, 0),
+        "Red"       : [(13, 1)]
+    },
+    "SR830 Unit":{
+        "path"      :"606060_SR830.png",
+        "Grid"      : (8, 8),
+        "Size"      : (30, 24),
+        "Offset"    : (0, 0),
+        "Red"      : [(1, 3), (2, 3), (3, 3), (4, 3),
+                      (1, 4), (2, 4), (3, 4), (4, 4)]
+    },
+    "SR830 Bar":{
+        "path"      :"606060_SR830.png",
+        "Grid"      : (8, 8),
+        "Size"      : (64, 20),
+        "Offset"    : (0, 0),
+        "Left"      : [(5, 5),
+                       (1, 5), (1, 6), (1, 7),(1, 8),
+                       (3, 5), (3, 6), (3, 7),(3, 8)],
+        "Right"     : [(6, 5),
+                       (2, 5), (2, 6), (2, 7),(2, 8),
+                       (4, 5), (4, 6), (4, 7),(4, 8)]
     },
 
     # used by: "display.py", "buttons.py"

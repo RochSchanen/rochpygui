@@ -13,12 +13,11 @@ from layout   import *
 from controls import *
 from display  import *
 from buttons  import *
+from numpy    import exp, log
 
 ####################################################
 
-TIMER_DELAY_OVERLOAD = 500
-TIMER_DELAY_UNLOCK   = 500
-TIMER_DELAY_SNAP     = 500
+_TIMER_DELAY = 1000
 
 ####################################################
 
@@ -40,48 +39,45 @@ class _panel(Control):
         CTRLS['OVERLOAD']     = _overload(self)
         CTRLS['UNLOCK']       = _unlock(self)
         CTRLS['PHASE']        = _phase(self)
-        # self.VX = DigitalDisplay(self, SENSITIVITY, name = "Vx")
-        # self.VY = DigitalDisplay(self, SENSITIVITY, name = "Vy")
+        CTRLS['VX']           = _Vx(self)
+        CTRLS['VY']           = _Vy(self)
         # Place Controls
         h1 = Group(HORIZONTAL)
-        h1.Place(CTRLS['TIMECONSTANT'], deco='Groove')
-        h1.Place(CTRLS['SENSITIVITY'],  deco='Groove')
+        h1.Place(CTRLS['TIMECONSTANT'], deco = 'Groove')
+        h1.Place(CTRLS['SENSITIVITY'],  deco = 'Groove')
         v1 = Group(VERTICAL)
-        v1.Place(CTRLS['OVERLOAD'],     deco='Groove')
-        v1.Place(CTRLS['UNLOCK'],       deco='Groove')
-        h1.Place(v1)
+        v1.Place(CTRLS['OVERLOAD'],     deco = 'Groove')
+        v1.Place(CTRLS['UNLOCK'],       deco = 'Groove')
+        h1.Place(v1,                    deco = None)
         h2 = Group(HORIZONTAL)
-        h2.Place(CTRLS['INPUT'],        deco='Groove')
-        h2.Place(CTRLS['SLOPE'],        deco='Groove')
-        h2.Place(CTRLS['RESERVE'], TOP, deco='Groove')
-        h5 = Group(HORIZONTAL)
-        h5.Place(CTRLS['PHASE'],        deco='Groove')
-        h5.Place(CTRLS['SYNC'],         deco='Groove')
+        h2.Place(CTRLS['INPUT'],        deco = 'Groove')
+        h2.Place(CTRLS['SLOPE'],        deco = 'Groove')
+        h2.Place(CTRLS['RESERVE'],      deco = 'Groove')
         h3 = Group(HORIZONTAL)
-        h3.Place(CTRLS['COUPLING'],     deco='Groove')
-        h3.Place(CTRLS['GROUNDING'],    deco='Groove')
-        h3.Place(CTRLS['FILTERS'],      deco='Groove')
-        # h4 = Group(HORIZONTAL)
-        # h4.Place(self.VX)
-        # h4.Place(self.VY)
+        h3.Place(CTRLS['COUPLING'],     deco = 'Groove')
+        h3.Place(CTRLS['GROUNDING'],    deco = 'Groove')
+        h3.Place(CTRLS['FILTERS'],      deco = 'Groove')
+        h3.Place(CTRLS['SYNC'],         deco = 'Groove')
+        h4 = Group(HORIZONTAL)
+        h4.Place(CTRLS['PHASE'],        deco = 'Groove')
+        h4.Place(CTRLS['VX'],           deco = 'Groove')
+        h4.Place(CTRLS['VY'],           deco = 'Groove')
         # record dictionary
         self.CTRLS = CTRLS
         # make panel
         Content = Group(VERTICAL)
-        Content.Place(Text(self, 'SR830'))
-        Content.Place(h1)
-        # Content.Place(h4, deco =  'Groove')
-        Content.Place(h2)
-        Content.Place(h5)
-        Content.Place(h3)
+        Content.Place(Text(self, 'SR830'), deco = None)
+        Content.Place(h1, deco = None)
+        Content.Place(h4, deco = None)
+        Content.Place(h2, deco = None)
+        Content.Place(h3, deco = None)
         # Expansions
         Content.Expand()
         h1.Expand()
         v1.Expand()
         h2.Expand()
         h3.Expand()
-        # h4.Expand()
-        h5.Expand()
+        h4.Expand()
         # draw decorations
         Content.DrawAllDecorations(self)
         self.SetSize(Content.GetSize())
@@ -89,8 +85,24 @@ class _panel(Control):
         return
 
     def SetVisa(self, Instrument):
+        self.instr = Instrument
         for CTRL in self.CTRLS.values():
             CTRL.SetVisa(Instrument)
+        # Switch on timer
+        self.Timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self._onTimer, self.Timer)
+        self.Timer.Start(_TIMER_DELAY)
+        return
+
+    def _onTimer(self, event):
+        if self.instr:
+            S = self.instr.query('SNAP?1,2')
+            X, Y = S.split(',')
+            self.CTRLS['VX'].SetValue(float(X))
+            self.CTRLS['VY'].SetValue(float(Y))
+            S = self.instr.query("LIAS?")
+            self.CTRLS['UNLOCK'].SetValue(int(S))
+            self.CTRLS['OVERLOAD'].SetValue(int(S))
         return
 
 ####################################################
@@ -151,9 +163,9 @@ class _sensitivity(Control):
         buttons.Place(BTNDN)
         # group content
         Content = Group(VERTICAL)
-        Content.Place(Text(self, 'Sensitivity'), border = (0,0,0,10))
+        Content.Place(Text(self, 'Sensitivity'), border = (0,0,0,5))
         Content.Place(display)
-        Content.Place(buttons, border = (0,0,10,10))
+        Content.Place(buttons, border = (0,0,5,5))
         # Draw decors
         Content.DrawAllDecorations(self)
         self.SetSize(Content.GetSize())
@@ -229,9 +241,9 @@ class _timeConstant(Control):
         buttons.Place(BTNDN)
         # create content
         Content = Group(VERTICAL)
-        Content.Place(Text(self, 'Time Constant'), border = (0,0,0,10))
+        Content.Place(Text(self, 'Time Constant'), border = (0,0,0,5))
         Content.Place(display)
-        Content.Place(buttons, border = (0,0,10,10))
+        Content.Place(buttons, border = (0,0,5,5))
         # Draw decors
         Content.DrawAllDecorations(self)
         self.SetSize(Content.GetSize())
@@ -290,9 +302,9 @@ class _single(Control):
         BTNDN.BindEvent(self._dn)
         # create content
         Content = Group(VERTICAL)
-        Content.Place(Text(self, self.name))
-        Content.Place(BTNDN, border = (0,0,10,10))
+        Content.Place(Text(self, self.name), border = (0,0,0,5))
         Content.Place(display)
+        Content.Place(BTNDN, border = (0,0,5,5))
         # Draw decors
         Content.DrawAllDecorations(self)
         self.SetSize(Content.GetSize())
@@ -430,7 +442,7 @@ class _filters(_single):
         self.name     = 'Filter'
         self.encoding = [[0],[1]]
         self.labels   = [['LINE', '2xLINE']]
-        self.colour   = 'Yellow'
+        self.colour   = 'White'
         self.style    = 'Blank'
         self.VISA     = 'ILIN'
         return
@@ -464,7 +476,7 @@ class _unlock(Control):
         Content = Group(VERTICAL)
         # make layout
         lbl = Text(self, 'Unlocked')
-        Content.Place(lbl)
+        Content.Place(lbl, border = (0,0,0,5))
         Content.Place(self.led)
         # Draw decors
         Content.DrawAllDecorations(self)
@@ -484,18 +496,7 @@ class _unlock(Control):
         return
 
     def SetVisa(self, Instrument):
-        # LOCAL
-        self.instr = Instrument
-        # TIMER
-        self.Timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self._onTimer, self.Timer)
-        self.Timer.Start(TIMER_DELAY_UNLOCK)
-        return
-
-    def _onTimer(self, event):
-        if self.instr:
-            self.SetValue(int(self.instr.query("LIAS?")))
-        return
+        pass
 
 ####################################################
 
@@ -513,7 +514,7 @@ class _overload(Control):
         # create content
         Content = Group(VERTICAL)
         lbl = Text(self, 'Overload')
-        Content.Place(lbl)
+        Content.Place(lbl, border = (0,0,0,5))
         Content.Place(display)
         # Draw decors
         Content.DrawAllDecorations(self)
@@ -534,18 +535,7 @@ class _overload(Control):
         return
 
     def SetVisa(self, Instrument):
-        # LOCAL
-        self.instr = Instrument
-        # TIMER
-        self.Timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self._onTimer, self.Timer)
-        self.Timer.Start(TIMER_DELAY_OVERLOAD)
-        return
-
-    def _onTimer(self, event):
-        if self.instr:
-            self.SetValue(int(self.instr.query("LIAS?")))
-        return
+        pass
 
 ####################################################
 
@@ -556,7 +546,7 @@ class _sync(Control):
         self.status = 0
         self.instr = None
         # make button
-        lib, libnam = Theme.GetImages('LED Switch', 'Yellow')       
+        lib, libnam = Theme.GetImages('LED Switch', 'White')       
         self.BTNSW = Switch(self, lib, libnam)
         self.BTNSW.BindEvent(self._press)
         # create content
@@ -683,4 +673,91 @@ class _phase(Control):
         if self.instr: self.instr.write("PHAS %d" % self.status)
         # done
         self.SendEvent()
+        return
+
+####################################################
+
+class _signal(Control):
+
+    def Start(self):
+        self._init()
+        self.instr = None
+        # make digital display
+        DISP = Group(HORIZONTAL)
+        # make format
+        n = 3 # integer digits (Number of)
+        d = 3 # decimal digits (Number of)
+        self.format = f'%+{n+d+2}.{d}f'
+        # displays
+        self.wheels = []        
+        for char in list(f'%+0{n+d+2}.{d}fU'%0):
+            if char == '+':
+                lib, Names = Theme.GetImages('SR830 Sign',  'Red')
+                self.sign = Display(self, lib, Names) 
+                DISP.Place(self.sign)
+            if char == '0':
+                lib, Names = Theme.GetImages('SR830 Digit', 'Red')
+                wheel = Display(self, lib, Names)
+                DISP.Place(wheel)
+                self.wheels.append(wheel)
+            if char == '.':
+                lib, Names = Theme.GetImages('SR830 Dot',   'Red')
+                DISP.Place(Display(self, lib, Names))
+            if char == 'U':
+                lib, Names = Theme.GetImages('SR830 Unit',  'Red')
+                self.unit = Display(self, lib, Names) 
+                DISP.Place(self.unit)
+        BAR = Group(HORIZONTAL)
+        lib, Names = Theme.GetImages('SR830 Bar', 'Left')
+        self.left = Display(self, lib, Names)
+        BAR.Place(self.left)
+        lib, Names = Theme.GetImages('SR830 Bar', 'Right')
+        self.right = Display(self, lib, Names)
+        BAR.Place(self.right)
+        self.left.SetValue(4)
+        self.right.SetValue(0)
+        # make layout
+        Content = Group(VERTICAL)
+        Content.Place(Text(self, self.label))
+        Content.Place(DISP, border = (5,15,5,5))
+        Content.Place(BAR)
+        # done
+        Content.DrawAllDecorations(self)
+        self.SetSize(Content.GetSize())
+        return
+
+    def SetValue(self, Value):
+        SENS = self.parent.CTRLS['SENSITIVITY']
+        i, j, k = SENS.encoding[SENS.status]
+        V = Value*1000**(k)  # scale Value to units
+        I = float([5, 2, 1][i]*[100, 10, 1][j])/8.0 # Interval
+        N = min(8, abs(round(V/I)))
+        self.left.SetValue( N if V < 0 else 0)
+        self.right.SetValue(N if V > 0 else 0)
+        self.unit.SetValue(k)
+        wheeln = 0 # index pointer to current digit
+        for char in list(self.format % V):
+            if char == '+': self.sign.SetValue(0); continue
+            if char == '-': self.sign.SetValue(1); continue
+            if char == '.': continue
+            n = 10 if char == ' ' else int(char)
+            wheel = self.wheels[wheeln]
+            wheel.SetValue(n)
+            wheeln += 1
+        # done
+        return
+
+    def SetVisa(self, Instrument):
+        pass
+
+class _Vx(_signal):
+
+    def _init(self):
+        self.label = 'Vx'
+        return
+
+class _Vy(_signal):
+
+    def _init(self):
+        self.label = 'Vy'
         return
