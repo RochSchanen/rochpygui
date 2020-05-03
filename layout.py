@@ -4,6 +4,9 @@
 # created; 2020 Mars 26
 # repository; https://github.com/RochSchanen/rochpygui
 
+# todo: check for small shifts in positions: typically 1 pixel size
+# todo: thinks about adding corners to the decoration (larger than the borders)
+
 # wxpython: https://www.wxpython.org/
 import wx
 
@@ -362,7 +365,7 @@ class _decorationsLibrary():
                 # store results
                 self.decorations[Name] = (Sample, l, r, t, b)
 
-            # use default (lib or image not found)
+            # lib or image not found -> use default:
             else:
                 # get geometry
                 r, l, t, b = 3, 3, 3, 3

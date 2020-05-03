@@ -4,19 +4,23 @@
 # created; 2020 April 02
 # repository; https://github.com/RochSchanen/rochpygui
 
+# todo: add the led display here
+# todo: add the wheel display here
+# todo: make the selection of the control images using simple names
+
 # wxpython: https://www.wxpython.org/
 import wx
 
 from theme import *
 
 class Display(wx.Control):
-
+    # superseed __init__()
     def __init__(
         self,
         parent,
         pnglib,
         names):
-
+        # call parent __init__()
         wx.Control.__init__(
             self,
             parent      = parent,
@@ -26,29 +30,24 @@ class Display(wx.Control):
             style       = wx.NO_BORDER,
             validator   = wx.DefaultValidator,
             name        = "")
-
         # PARAMETERS
         self.parent = parent
         # the set of images is defined by a name list
         self.names  = names
         # load the whole set of images:
         self.pngs   = pnglib.Get(names)
-
         # LOCAL
         # status is an index or a name
         self.status = 0
-
         # get png size from first image
         w, h = self.pngs[self.status].GetSize()
         self.SetSize((w, h))
-
         # set background color
         self.SetBackgroundColour(BackgroundColour)
-
         # BINDINGS
         self.Bind(wx.EVT_ERASE_BACKGROUND, self._onEraseBackground)
         self.Bind(wx.EVT_PAINT, self._onPaint)
-
+        # done
         return
 
     def _onEraseBackground(self, event):

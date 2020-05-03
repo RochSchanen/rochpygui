@@ -4,14 +4,13 @@
 # created; 2020 April 11
 # repository; https://github.com/RochSchanen/rochpygui
 
-# todo: - rationalise extra border EB
-# todo: - eventually remove DEBUG
+# todo: - rationalise extra border variable "EB"
 # todo: - set right label alignment to the right
 #       (sign changes are shifting the text position)
-# todo: - There seems to be a difference between labels and main ticks!
-#       (in some rare circumptances, there is more labels than main ticks)
+# todo: - There seems to be a difference between labels and main ticks
+#       in some rare circumptances: there is more labels than main ticks
 #       The algorithms for computing the ticks and labels must be exactly the same
-# todo: Last, remove unused debug features
+# todo: For last: remove unused debug features
 
 DEBUG = False
 
@@ -21,58 +20,53 @@ import wx
 # numpy: https://numpy.org/
 from numpy import exp, log10, floor, ceil, linspace, array
 
+# LOCAL IMPORTS
 from theme import *
 
 ###############################################################################
 ################################# GRAPH #######################################
 ###############################################################################
 
-# local options (internal to graph)
 _opt = 1
 
-# style options
-DRAW_BOX       = _opt; _opt<<=1
-DRAW_AXIS      = _opt; _opt<<=1
-DRAW_GRID      = _opt; _opt<<=1
-DRAW_PLOTS     = _opt; _opt<<=1
+# graph style options
+DRAW_BOX   = _opt; _opt<<=1
+DRAW_AXIS  = _opt; _opt<<=1
+DRAW_GRID  = _opt; _opt<<=1
+DRAW_PLOTS = _opt; _opt<<=1
 
-DRAW_LABEL_LEFT    = _opt; _opt<<=1
-DRAW_LABEL_RIGHT   = _opt; _opt<<=1
-DRAW_LABEL_TOP     = _opt; _opt<<=1
-DRAW_LABEL_BOTTOM  = _opt; _opt<<=1
+DRAW_LABEL_LEFT   = _opt; _opt<<=1
+DRAW_LABEL_RIGHT  = _opt; _opt<<=1
+DRAW_LABEL_TOP    = _opt; _opt<<=1
+DRAW_LABEL_BOTTOM = _opt; _opt<<=1
+
+SKIP_BORDERS = _opt; _opt<<=1
 
 DRAW_LABELS = (DRAW_LABEL_BOTTOM
              | DRAW_LABEL_TOP
              | DRAW_LABEL_RIGHT
              | DRAW_LABEL_LEFT)
 
-SKIP_BORDERS   = _opt; _opt<<=1
-
 class Graph():
 
     def __init__(self):
-        
         # LOCAL
-        self.limit  = None        # this is the box coordinates
-        self.size   = None        # this is the bitmap size
-        self.border = 0, 0, 0, 0  # these are the border around the box
-
+        self.limit  = None        # this is the box coordinates (clipping area)
+        self.size   = None        # this is the size of the bitmap beeing drawn onto
+        self.border = 0, 0, 0, 0  # these is the border around the box
         # style defines which elements are drawn onto the bitmap and how:
         self.style      = 0     # default style
         self.ticks      = 7, 7  # expected number of ticks on the grid (x and y)
         self.font       = None
-        self.leftText   = None
-        self.bottomText = None
+        self.leftText   = ""
+        self.bottomText = ""
         self.xFormat    = [2, 1] # integer digits, decimal digits
         self.yFormat    = [2, 1] # integer digits, decimal digits
         self.plots      = []     # list of plot to draw
-
         # scale is computed from size, limit and border:
         self.scale     = None        
-
         # extra border        
         self.EB = 5 
-
         # done
         return
 
@@ -102,13 +96,15 @@ class Graph():
         self._setScale()
         return
 
+    # set some options
     def StyleSet(self, StyleFlag):
         self.style |= StyleFlag
         return
 
-    # def StyleClear(self, StyleFlag):
-    #     self.style &= ~StyleFlag
-    #     return
+    # remove some options
+    def StyleClear(self, StyleFlag):
+        self.style &= ~StyleFlag
+        return
 
     def SetFont(self, Font):
         self.font = Font
@@ -140,7 +136,7 @@ class Graph():
     def _setScale(self):
         self.scale = None
         if not self.limit: return
-        if not self.size: return
+        if not self.size:  return
         # get geometry
         W, H = self.size
         l, r, t, b = self.border
@@ -331,6 +327,7 @@ class Graph():
                 lT = f % v                                   
                 lW, lH = dc.GetTextExtent(lT) # get size
                 q = y-lH/2                    # get position
+                # no coercion in this case
                 if self.style & DRAW_LABEL_LEFT:
                     dc.DrawText(lT, l-lW-self.EB, q)
                 if self.style & DRAW_LABEL_RIGHT:
@@ -342,7 +339,7 @@ class Graph():
                         dc.DrawRectangle(l-lW-self.EB, q, lW, lH)
                     if self.style & DRAW_LABEL_RIGHT:
                         dc.DrawRectangle(W-r+self.EB, q, lW, lH)
-
+        # done
         return
 
     def _drawTitles(self, dc):
@@ -392,7 +389,7 @@ class Graph():
                         dc.DrawRectangle(x-pw, y-pw, 2*pw, 2*ph)
                         dc.SetPen(wx.Pen(wx.Colour(255,255,255)))
                         dc.DrawPoint(x, y)
-
+        # done
         dc.DestroyClippingRegion()
         return
 
@@ -418,7 +415,7 @@ class _plot():
         self.x = array([])
         self.y = array([])
         # setup
-        self.SetPointStyle()
+        self.SetPointStyle() # calls SetLineStyle()
         # done
         return
 
@@ -428,22 +425,21 @@ class _plot():
         return
 
     def SetPointStyle(self, Styles = None):
-
+        # library
         SHAPES = {
             'DOT'        : "DOT"}
-
+        # library
         COLOURS = {
             'WHITE'      : "White",
             'BLUE'       : "Blue",
             'RED'        : "Red",
             'GREEN'      : "Green"}
-
+        # library
         SIZES = {
             'SMALL'      : "_0",
             'MEDIUM'     : "_1",
             'LARGE'      : "_2",
             'EXTRALARGE' : "_3"}
-
         # fit parameter type (Style must be a list)
         if not isinstance(Styles, list): Styles = [Styles]
         # get current values
@@ -470,7 +466,7 @@ class _plot():
         return
 
     def SetLineStyle(self, Styles = None):
-
+        # library
         DASHINGS = {
             'DOT'        : wx.PENSTYLE_DOT,
             'DOT DASH'   : wx.PENSTYLE_DOT_DASH,
@@ -478,12 +474,11 @@ class _plot():
             'SHORT DASH' : wx.PENSTYLE_SHORT_DASH,
             'SOLID'      : wx.PENSTYLE_SOLID,
             'TRANSPARENT': wx.PENSTYLE_TRANSPARENT}
-
+        # library
         WIDTHS = {
             'THIN'       : 1,
             'MEDIUM'     : 2,
             'THICK'      : 3}
-
         # fit parameter type (Style must be a list)
         if not isinstance(Styles, list): Styles = [Styles]
         # get current values

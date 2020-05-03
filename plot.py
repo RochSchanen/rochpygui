@@ -8,6 +8,7 @@
 # todo: can we estimate the number of ticks and number
 #       decimal digits from the span of the data set
 # todo: Check refresh requirement when dynamic changes (limit, format, ...).
+# todo: Xfit and Yfit give an error when there is no data, fix it.
 
 # wxpython: https://www.wxpython.org/
 import wx
@@ -199,76 +200,63 @@ class GraphicScreen(Screen):
 class InteractiveGraph(Control):
 
     def Start(self):
-
         # create plot
         self.Graph = GraphicScreen(self, 600, 600)
-
         # build tool bar:
         ToolBar = Group(VERTICAL)
-
         # measure
         self.MeasureTool = _Measure(self.Graph)
         lib, names = Theme.GetImages('Graph','Measure')
         MEASURE = Switch(self, lib, names)
         MEASURE.BindEvent(self.MeasureEvent)
         ToolBar.Place(MEASURE)
-
         # drag
         self.DragTool = _Drag(self.Graph)
         lib, names = Theme.GetImages('Graph','Drag')
         DRAG = Switch(self, lib, names)
         DRAG.BindEvent(self.DragEvent)
         ToolBar.Place(DRAG)
-
         # expand
         self.ExpandTool = _Expand(self.Graph)
         lib, names = Theme.GetImages('Graph','Expand')
         EXPAND = Switch(self, lib, names)
         EXPAND.BindEvent(self.ExpandEvent)
         ToolBar.Place(EXPAND)
-
         # X expand
         self.XExpandTool = _XExpand(self.Graph)
         lib, names = Theme.GetImages('Graph','X Expand')
         XEXPAND = Switch(self, lib, names)
         XEXPAND.BindEvent(self.XExpandEvent)
         ToolBar.Place(XEXPAND)
-
         # Y expand
         self.YExpandTool = _YExpand(self.Graph)
         lib, names = Theme.GetImages('Graph','Y Expand')
         YEXPAND = Switch(self, lib, names)
         YEXPAND.BindEvent(self.YExpandEvent)
         ToolBar.Place(YEXPAND)
-
         # shrink
         lib, names = Theme.GetImages('Graph','Shrink')
         SHRINK = Push(self, lib, names)
         SHRINK.BindEvent(self.ShrinkEvent)
         ToolBar.Place(SHRINK)
-
         # Yfit tool
         lib, names = Theme.GetImages('Graph','Yfit')
         YFIT = Switch(self, lib, names)
         YFIT.BindEvent(self.YfitEvent)
         ToolBar.Place(YFIT)
-
         # Xfit tool
         lib, names = Theme.GetImages('Graph','Xfit')
         XFIT = Switch(self, lib, names)
         XFIT.BindEvent(self.XfitEvent)
         ToolBar.Place(XFIT)
-
         # group into radio collection
         RadioCollect([MEASURE, DRAG, EXPAND, XEXPAND, YEXPAND, SHRINK])
-
         # setup content and set size
         Content = Group(HORIZONTAL)
         Content.Place(self.Graph)
         Content.Place(ToolBar)
         Content.DrawAllDecorations(self)
         self.SetSize(Content.GetSize())
-        
         # done
         return
 
@@ -375,8 +363,9 @@ class InteractiveGraph(Control):
 ###############################################################################
 
 class _Drag(ScreenDragBuffer):
-    # superseed the previous _unlock() method to provide
-    # a RefreshBuffer() at the end of the drag event
+    # superseed the previous _unlock() method to
+    # provide a RefreshBuffer() at the end of
+    # the drag event
     def _unlock(self, event):
         if self.lock:
             self.scr.RefreshBuffer()            
@@ -615,39 +604,32 @@ class _Measure(ScreenTool):
         return
 
     def onPaint(self, dc):
-        
         # get refernce to graph
         Graph = self.scr.OnPaintGraph
-
         # get geometry
         l, r, t, b = Graph.border
         W, H = Graph.size
-
         # draw P0
         if self.P0:
             x0, y0 = self.P0
             dc.SetPen(self.pen)
             dc.DrawLine(x0, t, x0, H-b)            
             dc.DrawLine(l, y0, W-r, y0)
-
         # draw P1
         if self.P1:
             x1, y1 = self.P1
             dc.SetPen(self.pen)
             dc.DrawLine(x1, t, x1, H-b)            
             dc.DrawLine(l, y1, W-r, y1)                
-
         # get style
         n, d = Graph.xFormat; fx = f'%.{d+1}f'
         n, d = Graph.yFormat; fy = f'%.{d+1}f'
-
         # set style
         dc.SetBrush(self.brush)
         dc.SetFont(Graph.font)
         dc.SetTextForeground(self.colour)
         dc.SetPen(wx.TRANSPARENT_PEN)
         wX, wY = 0, 0
-
         # write P0
         if self.P0:
             x0, y0 = self.P0
@@ -662,7 +644,6 @@ class _Measure(ScreenTool):
             wY, h = dc.GetTextExtent(T)
             dc.DrawRectangle(X, Y, wY, h)
             dc.DrawText(T, X, Y)
-
         # draw P1
         if self.P1:
             x1, y1 = self.P1
@@ -677,7 +658,6 @@ class _Measure(ScreenTool):
             wY, h = dc.GetTextExtent(T)
             dc.DrawRectangle(X, Y, wY, h)
             dc.DrawText(T, X, Y)
-
         # write delta
         if self.lock:
             X, Y = X + max(wX, wY)+5, t
@@ -690,12 +670,8 @@ class _Measure(ScreenTool):
             wY, h = dc.GetTextExtent(T)
             dc.DrawRectangle(X, Y, wY, h)
             dc.DrawText(T, X, Y)
-
         # done
         return
-
-        # text = fx.format(X1)     
-        # dc.DrawText("X1 = {}".format(text), w+1/12*W, 0)
 
     def _getPosition(self, event):
         # get geometry

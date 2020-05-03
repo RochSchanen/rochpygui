@@ -2,6 +2,10 @@ notes.txt
 
 list of thoughts as they come...
 
+- learn to build a package for all these modules
+
+- check that bypassing _onEraseBackground() is necessary or worse: clumsy
+
 base:
 
 - add features to setup title, the startup position, etc...
@@ -10,27 +14,30 @@ Themes:
 
 - Create a theme system: theme images and backgrounds that can be
 easily updated or modified. DONE partially (06 April 2020).
-- absolutely the image library must be declared in some config files...
-- How to switch between themes?
-- try to use the benefit of png transparency.
-- try to make use of the SVG language for the graphics ?
-- it would be nice to split the geometry from the colors... (a lot more complicated)
+- try to use the benefit of png transparency
+- try to make use of the SVG language for the graphics
+- it would be nice to split the geometry from the colors...
+(this might be a lot more complicated than it seems)
+- select images for switch, push, led, etc.. by simple names
 
 layout:
 
-- Make a library of tools that select, group and align in a similar way that illustrator does. This would allow for a very versatile system while remaining pretty much user friendly. There would be some logic in the process of organising the graphics layout.
-
-- add decoration image in the theme module? DONE
+- Make a library of tools that select, group and align in a similar
+way that illustrator does. This would allow for a very versatile
+system while remaining pretty much user friendly. There would be some
+logic in the process of organising the graphics layout.
+- find out about tabs
 
 timer:
 
-- try generate timer signals shifted from each other
-- add timing to a confif file
+- try generate timer signals shifted from each other (if necessary)
 
 gpib:
 
 - how to resolve conflicting command from separated threads
-- SR830 QUERRIES ARE SLOW: Try to fix the situation.
+(this is a big chunk of infos to gather)
+- SR830 QUERRIES ARE SLOW: is it possible to fix the situation?
+- check platform and adjust backend automatic selection
 
 scripting:
 
@@ -38,11 +45,14 @@ scripting:
 
 display:
 
-- ...
+-
 
 buttons:
 
-- ....
+- build a generic wheel input control
+	leave the boundaries behaviour to the child class
+	(base class to be used for building larger wheel input)
+	fix the format definition to include spaces every 3 decades
 
 controls:
 
@@ -50,7 +60,9 @@ controls:
 
 Config:
 
-- Make a library to quickly and simply write and read to/from a configuration file that can be edited or created manually in a text file form.
+- Make a library to quickly and simply write and read to/from
+a configuration file that can be edited or created manually in
+a text file form: this is an important chunk.
 
 Log/Data base:
 
@@ -59,4 +71,3 @@ Log/Data base:
 Pdf:
 
  - Export graphs as pdf for sharing and printing
-

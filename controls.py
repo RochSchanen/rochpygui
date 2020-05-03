@@ -4,6 +4,9 @@
 # created; 2020 April 03
 # repository; https://github.com/RochSchanen/rochpygui
 
+# todo: check whether the wx.Control class should be raplaced by panels
+# todo: change self.evt to local evt. it is only used once to bind event object
+
 # wxpython: https://www.wxpython.org/
 import wx
 
@@ -12,11 +15,11 @@ from layout  import *
 from display import *
 
 class Control(wx.Control):
-
+    # superseed __init__()
     def __init__(
         self,
         parent):
-
+        # call parent __init__()
         wx.Control.__init__(
             self,
             parent      = parent,
@@ -26,27 +29,23 @@ class Control(wx.Control):
             style       = wx.NO_BORDER,
             validator   = wx.DefaultValidator,
             name        = "")
-
         # PARAMETERS
         self.parent = parent
-
         # LOCAL DEFAULTS
         self.status = 0
         self.BackgroundBitmap = None
         self.ctr, self.evt = None, None
-
         # DEFAULT BACKGROUND
         self.SetBackgroundColour(BackgroundColour)
-
         # BINDINGS
         self.Bind(wx.EVT_ERASE_BACKGROUND,self._onEraseBackground)
         self.Bind(wx.EVT_PAINT,self._onPaint)
-
         # user constructor
         self.Start()
-
+        # done
         return
 
+    # to be superseeded
     def Start(self):
         return
 

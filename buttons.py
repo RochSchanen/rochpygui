@@ -4,6 +4,12 @@
 # created; 2020 April 03
 # repository; https://github.com/RochSchanen/rochpygui
 
+# todo: !!! add the full wheel control here (periodic or fixed boundaries)
+# todo: make the selection of the control images using simple names
+# todo: if event.Skip() is really necessary then include it by default
+# todo: add SetValue() to Radio, Switch, etc...
+# todo: change self.evt to local evt. it is only used once to bind event object
+
 # wxpython: https://www.wxpython.org/
 import wx
 import wx.lib.newevent
@@ -17,37 +23,36 @@ from layout   import *
 
 # root class for buttons
 class _btn(Display):
-
+    # superseed __init__()
     def __init__(
         self,
         parent,
         pnglib,
         names):
-
+        # call parent __init__()
         Display.__init__(
             self,
             parent = parent,
             pnglib = pnglib,
             names  = names)
-
         # LOCALS
         self.radio = None
         self.ctr   = None
         self.evt   = None
-
         # BINDINGS
         self.Bind(wx.EVT_LEFT_DOWN,   self._onMouseDown)
         self.Bind(wx.EVT_LEFT_DCLICK, self._onMouseDown)
         # capture double clicks events as secondary single clicks
-
+        # call child start up method
         self._start()
-
+        # done
         return
 
+    # to superseed
     def _start(self):
         pass
 
-    # radio feature
+    # radio feature (to superseed)
     def _clear(self):
         pass
 
@@ -74,7 +79,7 @@ class _btn(Display):
 
 ####################################################
 
-# send event on mouse_down()
+# send event on pressing
 class Push(_btn):
 
     def _start(self):
@@ -109,7 +114,7 @@ class Push(_btn):
 
 ####################################################
 
-# send event on release
+# send event on releasing
 class Switch(_btn):
 
     def _start(self):
@@ -151,9 +156,14 @@ class Switch(_btn):
             self.SendEvent()
         return
 
+    def SetValue(self, Value):
+        self.status = Value
+        self.Refresh()
+        return
+
 ####################################################
 
-# send event on mouse_down()
+# send event on pressing
 class Radio(_btn):
 
     def _onMouseDown(self, event):
@@ -173,6 +183,8 @@ class Radio(_btn):
             self.Refresh()
             self.SendEvent()
         return
+
+####################################################
 
 class RadioCollect():
 
@@ -205,7 +217,7 @@ class Wheel(Display):
             pnglib = pnglib,
             names  = Normal + Hoover)
         # LOCALS
-        self.rotation = +1   # inverse rotation
+        self.rotation = +1 # direction
         self.reset = None # cancel operation
         # "hoover length" should be zero or
         # the same as "Normal length"
@@ -257,18 +269,19 @@ class Wheel(Display):
         # set overflow flag
         if m < 0   : self.overflow = -1
         if m > ln-1: self.overflow = +1
-        # coerce (when overflow)
+        # coerce (usefull only when overflow)
         m %= ln
         # upgrade to hoover
         m += ln if lh else 0
         # update state
         self.status = m
         # done
-        self.Refresh()
         self.SendEvent()
+        # self.Refresh()
         return
 
-    # sign value is +1 or -1
+    # when =1 rotation is normal
+    # when -1 rotation in inverted
     def SetRotation(self, Value):
         self.rotation = Value
         return
@@ -278,6 +291,7 @@ class Wheel(Display):
         ln, lh = self.l
         # get value
         m = int(Value)
+        # upgrade to hoover        
         if self.status > ln-1: m += ln 
         # update
         self.status = m
@@ -292,7 +306,7 @@ class Wheel(Display):
 
     def Reset(self):
         self.status = self.reset
-        self.Refresh()
+        # self.Refresh()
         return
 
     # Bind the event to the parent handler

@@ -5,6 +5,9 @@
 # repository; https://github.com/RochSchanen/rochpygui
 
 # todo: we should definitely define images geometries in configuration files
+# todo: set an alternate theme by seting a different path before the start of the application
+# todo: think about BackgroundColour and TextColour
+# todo: think about fonts
 
 # wxpython: https://www.wxpython.org/
 import wx
@@ -119,7 +122,19 @@ _ImageLibraries = {
         "Size"      : (5, 20),
         "Offset"    : (0, 0),
         # sets:
-        "White"       : [(6, 1)]
+        "White"     : [(6, 1)]
+    },
+
+    # used by: "display.py", "buttons.py"
+    "Hex Unit":{
+        "path"      :"606060_DIGIT.png",
+        "Grid"      : (8, 4),
+        "Size"      : (32, 20),
+        "Offset"    : (0, 0),
+        # sets:
+        "Hz"        : [(6, 2)],
+        "V"         : [(7, 2)],
+        "Deg"       : [(8, 2)]
     },
 
     # used by: "display.py", "buttons.py"

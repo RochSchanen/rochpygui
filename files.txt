@@ -6,6 +6,7 @@ A short description of the project files.
 - README.md: read it.
 - gitit.txt: git commands summary.
 - notes.txt: casual notes and ideas about the project
+- todonext: prioritised list of things to do next.
 - base.py: Simplified App/Frame/Panel library.
 - theme.py: theme resources (colors and image and font libraries).
 - layout.py: tools to manage the graphics layout and some decorations.
@@ -16,6 +17,7 @@ A short description of the project files.
 - graph.py: A pen, brush style tool to draw graphs.
 - plot.py: A module using screen and graph to display a data set.
 - visa.py: A module for intrument communications.
-- SR830.py: The SR830 setup panel.
+- SR830.py: The SR830 lockin setup panel.
+- AG33521A: The agilent AG33521A generator setup panel.
 - myApp.py: user App minimum code.
 - testApp.py: demo App.

@@ -4,6 +4,8 @@
 # created; 2020 April 11
 # repository; https://github.com/RochSchanen/rochpygui
 
+# todo: in onPaint() should we clear selectively the screen to redraw less ?
+
 # wxpython: https://www.wxpython.org/
 import wx
 
@@ -18,9 +20,9 @@ from theme import *
 ###############################################################################
 
 class Screen(wx.Control):
-
+    # superseed __init__()
     def __init__(self, Parent, Width, Height):
-
+        # call parent __init__()
         wx.Control.__init__(
             self,
             parent      = Parent,
@@ -30,32 +32,26 @@ class Screen(wx.Control):
             style       = wx.NO_BORDER,
             validator   = wx.DefaultValidator,
             name        = "")
-
         # PARAMETERS
         self.parent = Parent
-
         # LOCAL
         self.tool       = None
         self.buffer     = None
         self.position   = 0, 0
         self.clipArea   = 0, 0, 0, 0
-
         # set geometry
         self.SetSize((Width, Height))
-
         # call user-defined constructor     
         self.Start()
-
         # bind events
         self.Bind(wx.EVT_ERASE_BACKGROUND, self._onEraseBackground) 
         self.Bind(wx.EVT_PAINT, self._onPaint)
-
         # done
         return
 
     # Called by the OS
     def _onEraseBackground(self, event):
-        # this is supposed to reduce flicker
+        # no operation (reduced flicker)
         pass
 
     # Called by the OS or by a user Refresh():
@@ -64,11 +60,8 @@ class Screen(wx.Control):
         # for the _onPaint() method
         dc = wx.BufferedPaintDC(self)
         # clear
-
         dc.SetBackground(wx.Brush(BackgroundColour))
         dc.Clear() # clear everything for the moment
-        # todo: might want to clear selectively. maybe.
-
         # draw
         if self.buffer:
             # get clip geometry
@@ -88,19 +81,15 @@ class Screen(wx.Control):
                 r = wx.Rect(X, Y, P, Q)
                 clip = self.buffer.GetSubBitmap(r)
                 dc.DrawBitmap(clip, l, t)
-
         # more drawings
         self.onPaint(dc)
-
         # additional painting features from the selected tool
         if self.tool: self.tool.onPaint(dc)
-
-        # It is not required to release
-        # the DC object when BufferedPaintDC()
-        # is used in the onPaint() method:
-        # done
+        # It is not required to release the DC object
+        # when BufferedPaintDC() is used within onPaint()
         return
 
+    # select tool (Drag, Select, Draw, etc...)
     def ToolSelect(self, newTool):
         if self.tool: self.tool.Deselect()
         self.tool = newTool
@@ -112,7 +101,7 @@ class Screen(wx.Control):
     def Start(self):
         pass
 
-    # additional painting features (most likely on the border area)
+    # additional onPaint features (such as borders, ticks, etc...)
     def onPaint(self, dc):
         pass
 

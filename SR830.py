@@ -4,6 +4,11 @@
 # created; 2020 April 19
 # repository; https://github.com/RochSchanen/rochpygui
 
+# todo: add ampere units
+# todo: add bindings
+# todo: add configuration files
+# todo: change _dn to _press
+
 # wxpython: https://www.wxpython.org/
 import wx
 
@@ -26,7 +31,7 @@ class _panel(Control):
     def Start(self):
         # make a dictionary of all the controls        
         CTRLS = {}
-        # Create Controls
+        # create Controls
         CTRLS['SENSITIVITY']  = _sensitivity(self)
         CTRLS['TIMECONSTANT'] = _timeConstant(self)
         CTRLS['INPUT']        = _input(self)
@@ -648,7 +653,8 @@ class _phase(Control):
 
     def SetVisa(self, Instrument):
         self.instr = Instrument
-        self.SetValue(int(self.instr.query('PHAS?')))
+        X = self.instr.query('PHAS?')
+        self.SetValue(float(X))
         return
 
     def _update(self, event):
@@ -670,7 +676,7 @@ class _phase(Control):
         if x > +180.00: x -= 360.00
         # update
         self.SetValue(x)
-        if self.instr: self.instr.write("PHAS %d" % self.status)
+        if self.instr: self.instr.write("PHAS %.2f" % x)
         # done
         self.SendEvent()
         return
@@ -686,7 +692,7 @@ class _signal(Control):
         DISP = Group(HORIZONTAL)
         # make format
         n = 3 # integer digits (Number of)
-        d = 3 # decimal digits (Number of)
+        d = 4 # decimal digits (Number of)
         self.format = f'%+{n+d+2}.{d}f'
         # displays
         self.wheels = []        
