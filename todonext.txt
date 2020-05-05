@@ -5,7 +5,6 @@ prioritised todo list
 - STUDY: cross platform config files.
 - NEW MODULE: build config file module.
 - UPDATE MODULE "theme.py": add image libraries to config files.
-- UPDATE MODULE "AG33521.py": add Vrms, Vpp selector, adjust maxima.
 - UPDATE MODULE "plot.py":
 	fix Xfit and Yfit error when data plots are empty.
 	add/clear data point

@@ -127,14 +127,15 @@ _ImageLibraries = {
 
     # used by: "display.py", "buttons.py"
     "Hex Unit":{
-        "path"      :"606060_DIGIT.png",
-        "Grid"      : (8, 4),
-        "Size"      : (32, 20),
-        "Offset"    : (0, 0),
+        "path"        :"606060_DIGIT.png",
+        "Grid"        : (8, 4),
+        "Size"        : (36, 26),
+        "Offset"      : (0, 0),
         # sets:
-        "Hz"        : [(6, 2)],
-        "V"         : [(7, 2)],
-        "Deg"       : [(8, 2)]
+        "Hz"          : [(6, 2)],
+        "Volt Normal" : [(6, 3), (7, 3)],
+        "Volt Hoover" : [(6, 4), (7, 4)],
+        "Deg"         : [(8, 2)]
     },
 
     # used by: "display.py", "buttons.py"

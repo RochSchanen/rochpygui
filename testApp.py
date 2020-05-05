@@ -21,7 +21,7 @@ print('----------------------------------------------------')
 import base
 base._ESCAPE = True
 
-# create app
+# create App
 class myApp(App):
 
     def Start(self):
@@ -49,7 +49,7 @@ class myApp(App):
         IG.Graph.SetXLimit(123.151, +123.175)
         IG.Graph.SetXFormat(3, 3)
         IG.Graph.SetXTicks(5)
-        IG.Graph.SetYLabel("Lockin output / V")
+        IG.Graph.SetYLabel("Lock-in output / V")
         IG.Graph.SetYLimit(-0.51, +0.9)
         IG.Graph.SetYFormat(1, 2)
         IG.Graph.SetYTicks(9)
@@ -60,17 +60,17 @@ class myApp(App):
         Vy.SetData(t, y)
         Vy.SetPointStyle(['BLUE','SMALL'])
         IG.Graph.RefreshBuffer()
-        # setup Main
+        # set-up Main
         Main = Group(HORIZONTAL)
         Main.Place(IG,    deco = 'Outset')
         Main.Place(SETUP, deco = None)
-        # setup content
+        # set-up content
         content = Group(VERTICAL)
         content.Place(Main)
         # expansion
         content.Expand()
         Main.Expand()
-        SETUP.Expand()
+        # SETUP.Expand()
         # done
         content.DrawAllDecorations(self.Panel)
         return

@@ -263,9 +263,10 @@ class Wheel(Display):
         ln, lh = self.l
         m = self.status % ln
         # apply wheel action
-        r = event.GetWheelRotation()        
-        if r > 0: m += self.rotation
-        if r < 0: m -= self.rotation
+        r = event.GetWheelRotation()      
+        if r > 0: self.step = +self.rotation
+        if r < 0: self.step = -self.rotation
+        m += self.step
         # set overflow flag
         if m < 0   : self.overflow = -1
         if m > ln-1: self.overflow = +1
